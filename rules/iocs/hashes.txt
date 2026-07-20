@@ -1,0 +1,4 @@
+# Known malicious file hashes (add one per line)
+# Format: MD5, SHA1, or SHA256 hash
+# Lines starting with # are comments
+# Add known malware hashes here

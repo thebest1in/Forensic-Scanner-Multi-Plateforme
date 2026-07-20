@@ -1,0 +1,4 @@
+# Known malicious IP addresses (add one per line)
+# Format: IP address
+# Lines starting with # are comments
+# Add known C2, malware, and threat actor IPs here
