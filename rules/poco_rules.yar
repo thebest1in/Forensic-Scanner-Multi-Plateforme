@@ -254,3 +254,157 @@ rule Android_Root_Detection_Evasion : root_evasion {
     condition:
         3 of them
 }
+
+// --- HOOKING FRAMEWORK DETECTION ---
+
+rule Frida_Hooking_Framework : frida hooking_framework {
+    meta:
+        description = "Detects Frida dynamic instrumentation framework"
+        severity = "critical"
+    strings:
+        $f1 = "frida" ascii nocase
+        $f2 = "frida-agent" ascii nocase
+        $f3 = "frida-server" ascii nocase
+        $f4 = "re.frida.server" ascii nocase
+        $f5 = "frida-gadget" ascii nocase
+        $f6 = "libfrida" ascii nocase
+        $f7 = "frida_inject" ascii nocase
+        $f8 = "FRIDA" ascii
+    condition:
+        2 of them
+}
+
+rule Xposed_Framework : xposed hooking_framework {
+    meta:
+        description = "Detects Xposed Framework for runtime modification"
+        severity = "critical"
+    strings:
+        $x1 = "XposedBridge" ascii nocase
+        $x2 = "de.robv.android.xposed" ascii nocase
+        $x3 = "xposed_installer" ascii nocase
+        $x4 = "XposedBridge.jar" ascii nocase
+        $x5 = "libxposed" ascii nocase
+        $x6 = "xposed_art" ascii nocase
+        $x7 = "XSharedPreferences" ascii nocase
+    condition:
+        2 of them
+}
+
+rule Magisk_Root_Tool : magisk root {
+    meta:
+        description = "Detects Magisk Android root solution"
+        severity = "high"
+    strings:
+        $m1 = "magisk" ascii nocase
+        $m2 = "com.topjohnwu.magisk" ascii nocase
+        $m3 = "/data/adb/magisk" ascii nocase
+        $m4 = "/data/adb/.magisk" ascii nocase
+        $m5 = "magiskhide" ascii nocase
+        $m6 = "magiskpolicy" ascii nocase
+        $m7 = "Zygisk" ascii nocase
+    condition:
+        2 of them
+}
+
+rule Substrate_Hooking : substrate hooking_framework {
+    meta:
+        description = "Detects Cydia Substrate / MobileSubstrate hooking framework"
+        severity = "critical"
+    strings:
+        $s1 = "substrate" ascii nocase
+        $s2 = "MobileSubstrate" ascii nocase
+        $s3 = "libsubstrate" ascii nocase
+        $s4 = "MSHookFunction" ascii
+        $s5 = "MSHookMessageEx" ascii
+        $s6 = "SubstrateLoader" ascii nocase
+    condition:
+        2 of them
+}
+
+rule Android_Spyware_Packages : spyware stalkerware {
+    meta:
+        description = "Detects known commercial spyware packages"
+        severity = "critical"
+    strings:
+        $sp1 = "com.flexispy" ascii nocase
+        $sp2 = "com.spyera" ascii nocase
+        $sp3 = "com.mspy" ascii nocase
+        $sp4 = "com.highster" ascii nocase
+        $sp5 = "com.thetruthspy" ascii nocase
+        $sp6 = "com.springsolutions" ascii nocase
+        $sp7 = "com.androidstudioprojects" ascii nocase
+        $sp8 = "com.widdit" ascii nocase
+        $sp9 = "com.luxferre" ascii nocase
+        $sp10 = "com.surqs" ascii nocase
+        $sp11 = "com.fouadware" ascii nocase
+        $sp12 = "com.hawk.android" ascii nocase
+        $sp13 = "com.venum" ascii nocase
+        $sp14 = "com.phonesheriff" ascii nocase
+        $sp15 = "com.retina.je" ascii nocase
+        $sp16 = "com.pretulian.spyphone" ascii nocase
+        $sp17 = "com.childparental" ascii nocase
+        $sp18 = "com.bkphone" ascii nocase
+        $sp19 = "com.willdev" ascii nocase
+        $sp20 = "com.android.systemapp" ascii nocase
+    condition:
+        any of them
+}
+
+rule Android_Remote_Access : remote_access rat {
+    meta:
+        description = "Detects remote access tools and RATs"
+        severity = "high"
+    strings:
+        $ra1 = "com.anydesk.anydeskandroid" ascii nocase
+        $ra2 = "com.teamviewer" ascii nocase
+        $ra3 = "com.logmein" ascii nocase
+        $ra4 = "com.splashtop" ascii nocase
+        $ra5 = "com.realvnc" ascii nocase
+        $ra6 = "net.droidjack.server" ascii nocase
+        $ra7 = "com.droidjack" ascii nocase
+        $ra8 = "com.sandrorat" ascii nocase
+    condition:
+        any of them
+}
+
+rule Android_Data_Exfiltration_Patterns : data_exfil {
+    meta:
+        description = "Detects data exfiltration patterns in Android system dumps"
+        severity = "high"
+        aggregate_policy = "contextual_validation_required"
+    strings:
+        $ex1 = "SEND_SMS" ascii
+        $ex2 = "READ_SMS" ascii
+        $ex3 = "READ_CONTACTS" ascii
+        $ex4 = "READ_CALL_LOG" ascii
+        $ex5 = "RECORD_AUDIO" ascii
+        $ex6 = "CAMERA" ascii
+        $ex7 = "ACCESS_FINE_LOCATION" ascii
+        $ex8 = "READ_PHONE_STATE" ascii
+        $ex9 = "WRITE_EXTERNAL_STORAGE" ascii
+        $ex10 = "INSTALL_PACKAGES" ascii
+        $ex11 = "SYSTEM_ALERT_WINDOW" ascii
+        $ex12 = "BIND_ACCESSIBILITY_SERVICE" ascii
+        $ex13 = "BIND_DEVICE_ADMIN" ascii
+    condition:
+        6 of them
+}
+
+rule Android_Security_Evasion : security_evasion {
+    meta:
+        description = "Detects security evasion and anti-analysis techniques"
+        severity = "high"
+    strings:
+        $ev1 = "isDebugged" ascii
+        $ev2 = "isRooted" ascii
+        $ev3 = "isEmulator" ascii
+        $ev4 = "isFridaRunning" ascii
+        $ev5 = "detectFrida" ascii
+        $ev6 = "checkXposed" ascii
+        $ev7 = "bypassDetection" ascii
+        $ev8 = "antiAnalysis" ascii
+        $ev9 = "com.secure.android" ascii
+        $ev10 = "SafetyNet" ascii nocase
+    condition:
+        3 of them
+}

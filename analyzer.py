@@ -1,10 +1,9 @@
-import re
-import json
-import time
-import csv
 import ipaddress
-from pathlib import Path
+import json
+import re
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
 
 try:
     import yara
@@ -18,39 +17,41 @@ try:
 except ImportError:
     REQUESTS_AVAILABLE = False
 
-from core import logger, YARA_RULES_FILE, KNOWN_IPS_FILE, BASE_DIR
+from core import KNOWN_IPS_FILE, YARA_RULES_FILE, logger
 from yara_context import classify_yara_match, representative_evidence
 from yara_diagnostics import collect_match_evidence
 
 try:
-    from heuristics import analyze_permissions, HeuristicResult
+    from heuristics import analyze_permissions
     HEURISTICS_AVAILABLE = True
 except ImportError:
     HEURISTICS_AVAILABLE = False
 
 try:
     from history_db import (
-        build_scan_record, record_scan, compute_delta,
-        init_db, ScanRecord,
+        build_scan_record,
+        compute_delta,
+        init_db,
+        record_scan,
     )
     HISTORY_AVAILABLE = True
 except ImportError:
     HISTORY_AVAILABLE = False
 
 try:
-    from mvt_bridge import scan_ios_backup, scan_android_dump, check_mvt_available
+    from mvt_bridge import check_mvt_available, scan_android_dump, scan_ios_backup
     MVT_AVAILABLE = True
 except ImportError:
     MVT_AVAILABLE = False
 
 try:
-    from aleapp_bridge import run_aleapp, parse_aleapp_offline, check_aleapp_available
+    from aleapp_bridge import check_aleapp_available, parse_aleapp_offline
     ALEAPP_AVAILABLE = True
 except ImportError:
     ALEAPP_AVAILABLE = False
 
 try:
-    from capa_bridge import scan_apk, scan_directory, check_capa_available
+    from capa_bridge import check_capa_available, scan_apk, scan_directory
     CAPA_AVAILABLE = True
 except ImportError:
     CAPA_AVAILABLE = False
@@ -130,7 +131,10 @@ def filter_noise(content: str) -> str:
     if original_size > 0:
         reduction = (1 - filtered_size / original_size) * 100
         if reduction > 1:
-            logger.info(f"Log filter: {reduction:.0f}% noise removed ({original_size//1024}KB -> {filtered_size//1024}KB)")
+            logger.info(
+                f"Log filter: {reduction:.0f}% noise removed "
+                f"({original_size//1024}KB -> {filtered_size//1024}KB)"
+            )
     return filtered
 
 
@@ -173,6 +177,8 @@ class AnalysisResult:
         self.verdict_reasons: list[str] = []
         self.indexed_files: int = 0
         self.tool_status: dict[str, str] = {}  # {phase: "ok"|"error"|"skipped"|"disabled"}
+        self._extracted_files: dict[str, Path] | None = None
+        self.forensic_findings: list[dict] = []
 
     def to_dict(self) -> dict:
         from version import APP_NAME, REPORT_SCHEMA_VERSION, VERSION
@@ -206,6 +212,7 @@ class AnalysisResult:
             "indexed_files": self.indexed_files,
             "tool_status": self.tool_status,
             "summary": self.summary,
+            "forensic_findings": self.forensic_findings,
         }
         return d
 
@@ -345,6 +352,7 @@ def analyze(
         adapter_info: Optional adapter metadata
     """
     result = AnalysisResult()
+    result._extracted_files = extracted_files
     result.timestamp = time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime())
     result.device_serial = device_serial
     result.indexed_files = len(extracted_files)
@@ -470,6 +478,10 @@ def analyze(
             result.vt_results.append(vt_result)
             logger.info(f"VT lookup: {ip} -> {vt_result.get('status', 'ok')}")
 
+    # Phase 1.5: Process forensic-specific artifacts
+    _report(on_progress, 80, "Processing forensic artifacts...")
+    _process_forensic_artifacts(result, extracted_files)
+
     # Phase 2: Heuristic permission analysis
     if HEURISTICS_AVAILABLE:
         _report(on_progress, 85, "Running heuristic permission analysis...")
@@ -503,7 +515,7 @@ def analyze(
 
     # Phases 4-11: Run independent tools concurrently for speed
     _report(on_progress, 88, "Running analysis tools concurrently...")
-    tool_futures = {}
+    tool_futures = {}  # noqa: F841
 
     def _run_mvt():
         if not run_mvt:
@@ -854,7 +866,11 @@ def _compute_composite_risk(result: AnalysisResult) -> tuple[int, str]:
 
     # --- Tool bucket (20 pts max): MVT/APKiD/Quark/capa/ALEAPP ---
     tool_raw = 0
-    tool_ok = ts.get("mvt") == "ok" or ts.get("apkid") == "ok" or ts.get("quark") == "ok" or ts.get("capa") == "ok" or ts.get("aleapp") == "ok"
+    tool_ok = (
+        ts.get("mvt") == "ok" or ts.get("apkid") == "ok"
+        or ts.get("quark") == "ok" or ts.get("capa") == "ok"
+        or ts.get("aleapp") == "ok"
+    )
     for mvt in result.mvt_results:
         if mvt.get("threat_level") in ("critical", "high"):
             tool_raw = max(tool_raw, 10)
@@ -1136,7 +1152,7 @@ def _build_summary(result: AnalysisResult) -> str:
             lines.append(f"  {ip}")
 
     if result.vt_results:
-        lines.append(f"\n--- VirusTotal Results ---")
+        lines.append("\n--- VirusTotal Results ---")
         for vt in result.vt_results:
             if "malicious_detections" in vt:
                 lines.append(
@@ -1210,7 +1226,7 @@ def _build_summary(result: AnalysisResult) -> str:
                     f"{pulse_info}"
                 )
                 if i.get("c2_match"):
-                    lines.append(f"    -> C2 INFRASTRUCTURE MATCH")
+                    lines.append("    -> C2 INFRASTRUCTURE MATCH")
 
     if result.entropy_results:
         lines.append(f"\n--- Entropy Analysis ({len(result.entropy_results)} high-entropy files) ---")
@@ -1259,7 +1275,7 @@ def _build_summary(result: AnalysisResult) -> str:
         skipped_tools = [k for k, v in ts.items() if v.startswith("skipped")]
         disabled_tools = [k for k, v in ts.items() if v == "disabled"]
         if unavailable_tools or failed_tools or skipped_tools:
-            lines.append(f"\n--- Tool Health ---")
+            lines.append("\n--- Tool Health ---")
             lines.append(f"  Ran successfully: {', '.join(ok_tools) if ok_tools else 'none'}")
             if skipped_tools:
                 lines.append(f"  Skipped (no supported input): {', '.join(skipped_tools)}")
@@ -1270,7 +1286,155 @@ def _build_summary(result: AnalysisResult) -> str:
             if disabled_tools:
                 lines.append(f"  Disabled by configuration: {', '.join(disabled_tools)}")
 
+    # Forensic findings
+    if hasattr(result, "forensic_findings") and result.forensic_findings:
+        lines.append(f"\n--- Forensic Analysis ({len(result.forensic_findings)} findings) ---")
+        for finding in result.forensic_findings:
+            severity = finding.get("severity", "UNKNOWN")
+            finding_type = finding.get("type", "UNKNOWN")
+            evidence = finding.get("evidence", "")
+            lines.append(f"  [{severity}] {finding_type}: {evidence}")
+
     return "\n".join(lines)
+
+
+# ============================================================
+# FORENSIC ARTIFACT PROCESSING
+# ============================================================
+
+def _process_forensic_artifacts(result: AnalysisResult, extracted_files: dict[str, Path]):
+    """Process forensic-specific artifacts for additional threat indicators."""
+    forensic_findings = []
+
+    # Process hooking framework detection
+    hooking_file = extracted_files.get("hooking_framework_detection")
+    if hooking_file and hooking_file.exists():
+        try:
+            content = hooking_file.read_text(encoding="utf-8", errors="replace")
+            if "frida" in content.lower():
+                forensic_findings.append({
+                    "type": "HOOKING_FRAMEWORK",
+                    "severity": "CRITICAL",
+                    "framework": "Frida",
+                    "evidence": "Frida dynamic instrumentation framework detected",
+                    "file": hooking_file.name,
+                })
+                logger.warning("Forensic finding: Frida hooking framework detected")
+            if "xposed" in content.lower():
+                forensic_findings.append({
+                    "type": "HOOKING_FRAMEWORK",
+                    "severity": "CRITICAL",
+                    "framework": "Xposed",
+                    "evidence": "Xposed Framework for runtime modification detected",
+                    "file": hooking_file.name,
+                })
+                logger.warning("Forensic finding: Xposed Framework detected")
+            if "magisk" in content.lower():
+                forensic_findings.append({
+                    "type": "ROOT_TOOL",
+                    "severity": "HIGH",
+                    "framework": "Magisk",
+                    "evidence": "Magisk root solution detected",
+                    "file": hooking_file.name,
+                })
+                logger.warning("Forensic finding: Magisk root tool detected")
+        except Exception as e:
+            logger.warning(f"Failed to process hooking framework detection: {e}")
+
+    # Process partition integrity
+    partition_file = extracted_files.get("partition_integrity")
+    if partition_file and partition_file.exists():
+        try:
+            content = partition_file.read_text(encoding="utf-8", errors="replace")
+            if "error" in content.lower() or "mismatch" in content.lower():
+                forensic_findings.append({
+                    "type": "PARTITION_TAMPERING",
+                    "severity": "CRITICAL",
+                    "evidence": "Partition integrity verification failed",
+                    "file": partition_file.name,
+                })
+                logger.warning("Forensic finding: Partition integrity verification failed")
+        except Exception as e:
+            logger.warning(f"Failed to process partition integrity: {e}")
+
+    # Process root detection
+    root_file = extracted_files.get("root_detection")
+    if root_file and root_file.exists():
+        try:
+            content = root_file.read_text(encoding="utf-8", errors="replace")
+            if "debuggable=1" in content or "ro.debuggable=1" in content:
+                forensic_findings.append({
+                    "type": "ROOT_DETECTION",
+                    "severity": "HIGH",
+                    "evidence": "Device is in debuggable mode",
+                    "file": root_file.name,
+                })
+                logger.warning("Forensic finding: Device is debuggable")
+            if "ro.build.type=eng" in content:
+                forensic_findings.append({
+                    "type": "ROOT_DETECTION",
+                    "severity": "HIGH",
+                    "evidence": "Device is running engineering build",
+                    "file": root_file.name,
+                })
+                logger.warning("Forensic finding: Engineering build detected")
+        except Exception as e:
+            logger.warning(f"Failed to process root detection: {e}")
+
+    # Process known spyware scan
+    spyware_file = extracted_files.get("known_spyware_scan")
+    if spyware_file and spyware_file.exists():
+        try:
+            content = spyware_file.read_text(encoding="utf-8", errors="replace")
+            if content.strip():
+                forensic_findings.append({
+                    "type": "KNOWN_SPYWARE",
+                    "severity": "CRITICAL",
+                    "evidence": "Known spyware package detected",
+                    "file": spyware_file.name,
+                    "packages": content.strip().split("\n"),
+                })
+                logger.warning("Forensic finding: Known spyware package detected")
+        except Exception as e:
+            logger.warning(f"Failed to process known spyware scan: {e}")
+
+    # Process memory integrity
+    memory_file = extracted_files.get("memory_integrity")
+    if memory_file and memory_file.exists():
+        try:
+            content = memory_file.read_text(encoding="utf-8", errors="replace")
+            if "frida" in content.lower() or "xposed" in content.lower():
+                forensic_findings.append({
+                    "type": "MEMORY_INJECTION",
+                    "severity": "CRITICAL",
+                    "evidence": "Hooking framework injection detected in memory",
+                    "file": memory_file.name,
+                })
+                logger.warning("Forensic finding: Memory injection detected")
+        except Exception as e:
+            logger.warning(f"Failed to process memory integrity: {e}")
+
+    # Process system certificates
+    cert_file = extracted_files.get("system_certificates")
+    if cert_file and cert_file.exists():
+        try:
+            content = cert_file.read_text(encoding="utf-8", errors="replace")
+            cert_count = len([line for line in content.strip().split("\n") if line.strip()])
+            if cert_count > 200:
+                forensic_findings.append({
+                    "type": "SUSPICIOUS_CERTIFICATES",
+                    "severity": "MEDIUM",
+                    "evidence": f"Unusually high number of system certificates: {cert_count}",
+                    "file": cert_file.name,
+                })
+                logger.warning(f"Forensic finding: High certificate count: {cert_count}")
+        except Exception as e:
+            logger.warning(f"Failed to process system certificates: {e}")
+
+    # Store forensic findings in result
+    if forensic_findings:
+        result.forensic_findings = forensic_findings
+        logger.info(f"Forensic analysis complete: {len(forensic_findings)} findings")
 
 
 def _report(on_progress, percent, message):

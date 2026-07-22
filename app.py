@@ -1,10 +1,7 @@
-import hashlib
-import shutil
 import subprocess
 import tempfile
 import threading
 import time
-import tkinter as tk
 import zipfile
 from pathlib import Path
 from tkinter import filedialog, messagebox
@@ -12,9 +9,10 @@ from tkinter import filedialog, messagebox
 import customtkinter as ctk
 
 from analyzer import ThreatVerdict, analyze, save_report
-from core import ADB_BINARY, BASE_DIR, cleanup_dump_dir, logger
+from core import ADB_BINARY, cleanup_dump_dir, logger
 from extractor import get_profile_commands, run_extraction
 from ioc_sync import sync_ioc_feeds
+from recommendations_engine import PRIORITY_COLORS, generate_recommendations
 from scan_lifecycle import ScanLifecycle, ScanStage, StageTimeoutError, run_with_timeout
 from usb_monitor import DeviceState, USBMonitor
 from version import VERSION
@@ -87,7 +85,8 @@ class ForensicScannerApp(ctk.CTk):
         self._build_navigator_panel()     # Row 4: Artifact Navigator
         self._build_results_panel()       # Row 5: Results Text
         self._build_findings_panel()      # Row 6: Findings Panel (hidden)
-        self._build_progress_panel()      # Row 7: Progress + Terminal
+        self._build_recommendations_panel()  # Row 7: Recommendations (hidden)
+        self._build_progress_panel()      # Row 8: Progress + Terminal
 
     # ============================================================
     # ROW 0: HEADER
@@ -289,13 +288,25 @@ class ForensicScannerApp(ctk.CTk):
         ).pack(anchor="w", padx=6, pady=(3, 0))
 
         self._pcap_var = ctk.BooleanVar(value=False)
-        ctk.CTkCheckBox(acq_frame, text="Live PCAP", variable=self._pcap_var, font=ctk.CTkFont(size=10)).pack(anchor="w", padx=6, pady=1)
+        ctk.CTkCheckBox(
+            acq_frame, text="Live PCAP",
+            variable=self._pcap_var, font=ctk.CTkFont(size=10),
+        ).pack(anchor="w", padx=6, pady=1)
         self._vt_var = ctk.BooleanVar(value=False)
-        ctk.CTkCheckBox(acq_frame, text="VirusTotal IP", variable=self._vt_var, font=ctk.CTkFont(size=10)).pack(anchor="w", padx=6, pady=1)
+        ctk.CTkCheckBox(
+            acq_frame, text="VirusTotal IP",
+            variable=self._vt_var, font=ctk.CTkFont(size=10),
+        ).pack(anchor="w", padx=6, pady=1)
         self._save_var = ctk.BooleanVar(value=True)
-        ctk.CTkCheckBox(acq_frame, text="JSON Report", variable=self._save_var, font=ctk.CTkFont(size=10)).pack(anchor="w", padx=6, pady=1)
+        ctk.CTkCheckBox(
+            acq_frame, text="JSON Report",
+            variable=self._save_var, font=ctk.CTkFont(size=10),
+        ).pack(anchor="w", padx=6, pady=1)
         self._timeline_var = ctk.BooleanVar(value=True)
-        ctk.CTkCheckBox(acq_frame, text="Timeline CSV", variable=self._timeline_var, font=ctk.CTkFont(size=10)).pack(anchor="w", padx=6, pady=(1, 3))
+        ctk.CTkCheckBox(
+            acq_frame, text="Timeline CSV",
+            variable=self._timeline_var, font=ctk.CTkFont(size=10),
+        ).pack(anchor="w", padx=6, pady=(1, 3))
 
         # --- ANALYSIS column ---
         analysis_frame = ctk.CTkFrame(self._adv_content, fg_color="#1a1a2e", corner_radius=6)
@@ -306,19 +317,40 @@ class ForensicScannerApp(ctk.CTk):
         ).pack(anchor="w", padx=6, pady=(3, 0))
 
         self._mvt_var = ctk.BooleanVar(value=False)
-        ctk.CTkCheckBox(analysis_frame, text="MVT Spyware", variable=self._mvt_var, font=ctk.CTkFont(size=10)).pack(anchor="w", padx=6, pady=1)
+        ctk.CTkCheckBox(
+            analysis_frame, text="MVT Spyware",
+            variable=self._mvt_var, font=ctk.CTkFont(size=10),
+        ).pack(anchor="w", padx=6, pady=1)
         self._aleapp_var = ctk.BooleanVar(value=False)
-        ctk.CTkCheckBox(analysis_frame, text="ALEAPP Artifacts", variable=self._aleapp_var, font=ctk.CTkFont(size=10)).pack(anchor="w", padx=6, pady=1)
+        ctk.CTkCheckBox(
+            analysis_frame, text="ALEAPP Artifacts",
+            variable=self._aleapp_var, font=ctk.CTkFont(size=10),
+        ).pack(anchor="w", padx=6, pady=1)
         self._capa_var = ctk.BooleanVar(value=False)
-        ctk.CTkCheckBox(analysis_frame, text="Capa Capabilities", variable=self._capa_var, font=ctk.CTkFont(size=10)).pack(anchor="w", padx=6, pady=1)
+        ctk.CTkCheckBox(
+            analysis_frame, text="Capa Capabilities",
+            variable=self._capa_var, font=ctk.CTkFont(size=10),
+        ).pack(anchor="w", padx=6, pady=1)
         self._apkid_var = ctk.BooleanVar(value=False)
-        ctk.CTkCheckBox(analysis_frame, text="APKiD Packers", variable=self._apkid_var, font=ctk.CTkFont(size=10)).pack(anchor="w", padx=6, pady=1)
+        ctk.CTkCheckBox(
+            analysis_frame, text="APKiD Packers",
+            variable=self._apkid_var, font=ctk.CTkFont(size=10),
+        ).pack(anchor="w", padx=6, pady=1)
         self._quark_var = ctk.BooleanVar(value=False)
-        ctk.CTkCheckBox(analysis_frame, text="Quark Behavioral", variable=self._quark_var, font=ctk.CTkFont(size=10)).pack(anchor="w", padx=6, pady=1)
+        ctk.CTkCheckBox(
+            analysis_frame, text="Quark Behavioral",
+            variable=self._quark_var, font=ctk.CTkFont(size=10),
+        ).pack(anchor="w", padx=6, pady=1)
         self._entropy_var = ctk.BooleanVar(value=False)
-        ctk.CTkCheckBox(analysis_frame, text="Entropy Exfil", variable=self._entropy_var, font=ctk.CTkFont(size=10)).pack(anchor="w", padx=6, pady=1)
+        ctk.CTkCheckBox(
+            analysis_frame, text="Entropy Exfil",
+            variable=self._entropy_var, font=ctk.CTkFont(size=10),
+        ).pack(anchor="w", padx=6, pady=1)
         self._browser_var = ctk.BooleanVar(value=False)
-        ctk.CTkCheckBox(analysis_frame, text="Browser Forensics", variable=self._browser_var, font=ctk.CTkFont(size=10)).pack(anchor="w", padx=6, pady=(1, 3))
+        ctk.CTkCheckBox(
+            analysis_frame, text="Browser Forensics",
+            variable=self._browser_var, font=ctk.CTkFont(size=10),
+        ).pack(anchor="w", padx=6, pady=(1, 3))
 
         # --- INTEL + ACTION column ---
         intel_frame = ctk.CTkFrame(self._adv_content, fg_color="#1a1a2e", corner_radius=6)
@@ -329,11 +361,20 @@ class ForensicScannerApp(ctk.CTk):
         ).pack(anchor="w", padx=6, pady=(3, 0))
 
         self._intel_var = ctk.BooleanVar(value=False)
-        ctk.CTkCheckBox(intel_frame, text="OTX Live IP", variable=self._intel_var, font=ctk.CTkFont(size=10)).pack(anchor="w", padx=6, pady=1)
+        ctk.CTkCheckBox(
+            intel_frame, text="OTX Live IP",
+            variable=self._intel_var, font=ctk.CTkFont(size=10),
+        ).pack(anchor="w", padx=6, pady=1)
         self._encrypt_var = ctk.BooleanVar(value=False)
-        ctk.CTkCheckBox(intel_frame, text="Encrypt CRITICAL", variable=self._encrypt_var, font=ctk.CTkFont(size=10)).pack(anchor="w", padx=6, pady=1)
+        ctk.CTkCheckBox(
+            intel_frame, text="Encrypt CRITICAL",
+            variable=self._encrypt_var, font=ctk.CTkFont(size=10),
+        ).pack(anchor="w", padx=6, pady=1)
         self._correlation_var = ctk.BooleanVar(value=True)
-        ctk.CTkCheckBox(intel_frame, text="Cross-Tool Correlation", variable=self._correlation_var, font=ctk.CTkFont(size=10)).pack(anchor="w", padx=6, pady=(1, 3))
+        ctk.CTkCheckBox(
+            intel_frame, text="Cross-Tool Correlation",
+            variable=self._correlation_var, font=ctk.CTkFont(size=10),
+        ).pack(anchor="w", padx=6, pady=(1, 3))
 
         # Hide advanced content by default
         self._adv_content.grid_remove()
@@ -593,7 +634,10 @@ class ForensicScannerApp(ctk.CTk):
                 end_idx = idx + len(term)
                 tag_name = f"hl_{term.replace(' ', '_')}_{idx}"
                 textbox.tag_add(tag_name, f"1.0+{idx}c", f"1.0+{end_idx}c")
-                textbox.tag_config(tag_name, foreground=color, font=ctk.CTkFont(family="Consolas", size=11, weight="bold"))
+                textbox.tag_config(
+                    tag_name, foreground=color,
+                    font=ctk.CTkFont(family="Consolas", size=11, weight="bold"),
+                )
                 start = end_idx
 
     def _copy_to_clipboard(self, text: str):
@@ -625,7 +669,7 @@ class ForensicScannerApp(ctk.CTk):
         elif verdict == ThreatVerdict.SUSPICIOUS:
             color = "#f39c12"
         else:
-            color = "#2ecc71"
+            color = "#2ecc71"  # noqa: F841
 
         summary = result.summary
 
@@ -660,12 +704,12 @@ class ForensicScannerApp(ctk.CTk):
                     summary += f"\n    > {act['adb_command']}"
 
         if result.pcap_results and result.pcap_results.get("c2_hits"):
-            summary += f"\n\n--- PCAP C2 Hits ---"
+            summary += "\n\n--- PCAP C2 Hits ---"
             for hit in result.pcap_results["c2_hits"][:10]:
                 summary += f"\n  {hit.get('domain', '?')} ({hit.get('category', '?')})"
 
         if result.history_delta and result.history_delta.get("anomalies"):
-            summary += f"\n\n--- Delta Anomalies ---"
+            summary += "\n\n--- Delta Anomalies ---"
             for a in result.history_delta["anomalies"]:
                 summary += f"\n  {a}"
 
@@ -676,6 +720,9 @@ class ForensicScannerApp(ctk.CTk):
 
         # Show findings panel if threats found
         self._show_findings(result)
+
+        # Generate and show recommendations
+        self._generate_and_show_recommendations(result)
 
     # ============================================================
     # ROW 6: FINDINGS PANEL (REMOVABLE APPS)
@@ -846,19 +893,216 @@ class ForensicScannerApp(ctk.CTk):
             if hasattr(card, "_remove_btn"):
                 btn = card._remove_btn
                 try:
-                    btn_text = btn.cget("text")
                     btn.configure(state="disabled", text="Removed",
                                   fg_color="#555555")
                 except Exception:
                     pass
 
     # ============================================================
-    # ROW 7: PROGRESS + TERMINAL
+    # ROW 7: RECOMMENDATIONS PANEL
+    # ============================================================
+
+    def _build_recommendations_panel(self):
+        self._recs_outer = ctk.CTkFrame(self, corner_radius=10)
+        self._recs_outer.grid(row=7, column=0, padx=15, pady=(0, 3), sticky="ew")
+        self._recs_outer.grid_columnconfigure(0, weight=1)
+        self._recs_outer.grid_remove()
+
+        header = ctk.CTkFrame(self._recs_outer, fg_color="transparent")
+        header.grid(row=0, column=0, sticky="ew", padx=6, pady=(4, 0))
+        ctk.CTkLabel(
+            header, text="RECOMMENDATIONS",
+            font=ctk.CTkFont(size=11, weight="bold"), text_color="#3498db",
+        ).pack(side="left")
+        ctk.CTkLabel(
+            header, text="\u2014 prioritized security actions",
+            font=ctk.CTkFont(size=9), text_color="gray",
+        ).pack(side="left", padx=(4, 0))
+
+        self._recs_scroll = ctk.CTkScrollableFrame(
+            self._recs_outer, height=150,
+        )
+        self._recs_scroll.grid(row=1, column=0, padx=6, pady=(2, 6), sticky="ew")
+        self._recs_scroll.grid_columnconfigure(0, weight=1)
+
+        self._recs_cards: list[ctk.CTkFrame] = []
+
+    def _clear_recommendations(self):
+        for card in self._recs_cards:
+            card.destroy()
+        self._recs_cards.clear()
+        self._recs_outer.grid_remove()
+
+    def _show_recommendations(self, recommendations_result):
+        self._clear_recommendations()
+
+        if not recommendations_result or not recommendations_result.recommendations:
+            return
+
+        row_idx = 0
+        for rec in recommendations_result.recommendations:
+            priority = rec.get("priority", "LOW")
+            rec_type = rec.get("type", "INFORMATIONAL")
+            target_name = rec.get("target_name", rec.get("target", "Unknown"))
+            reason = rec.get("reason", "")
+            adb_command = rec.get("adb_command")
+
+            card = ctk.CTkFrame(self._recs_scroll, fg_color="#1a1a2e", corner_radius=6)
+            card.grid(row=row_idx, column=0, sticky="ew", padx=2, pady=2)
+            card.grid_columnconfigure(1, weight=1)
+
+            priority_color = PRIORITY_COLORS.get(priority, "#3498db")
+            badge = ctk.CTkLabel(
+                card, text=f" {priority} ",
+                font=ctk.CTkFont(size=9, weight="bold"),
+                fg_color=priority_color, corner_radius=4, text_color="white",
+            )
+            badge.grid(row=0, column=0, rowspan=2, padx=(8, 4), pady=6)
+
+            info = ctk.CTkFrame(card, fg_color="transparent")
+            info.grid(row=0, column=1, sticky="ew", pady=(4, 0))
+            ctk.CTkLabel(
+                info, text=f"[{rec_type}] {target_name}",
+                font=ctk.CTkFont(size=11, weight="bold"),
+                anchor="w",
+            ).pack(anchor="w")
+            ctk.CTkLabel(
+                info, text=reason[:120],
+                font=ctk.CTkFont(size=9), text_color="gray",
+                anchor="w",
+            ).pack(anchor="w")
+
+            if adb_command:
+                action_btn = ctk.CTkButton(
+                    card, text="Execute",
+                    font=ctk.CTkFont(size=10, weight="bold"),
+                    width=70, height=26,
+                    fg_color="#27ae60", hover_color="#1e8449",
+                    command=lambda cmd=adb_command, tgt=target_name: self._execute_recommendation(cmd, tgt),
+                )
+                action_btn.grid(row=0, column=2, rowspan=2, padx=(4, 8), pady=6)
+            elif rec_type == "MANUAL_REVIEW":
+                ctk.CTkLabel(
+                    card, text="Review",
+                    font=ctk.CTkFont(size=9), text_color="gray",
+                ).grid(row=0, column=2, rowspan=2, padx=(4, 8), pady=6)
+
+            self._recs_cards.append(card)
+            row_idx += 1
+
+        self._recs_outer.grid()
+
+    def _execute_recommendation(self, command, target_name):
+        if self._device_state != DeviceState.READY:
+            messagebox.showwarning(
+                "No Device",
+                "Connect a device via USB to execute recommendations.",
+            )
+            return
+
+        confirm = messagebox.askyesno(
+            "Confirm Action",
+            f"Execute recommendation for {target_name}?\n\n{command}",
+        )
+        if not confirm:
+            return
+
+        self._append_terminal(f"[INFO] Executing recommendation: {command}")
+
+        def _worker():
+            serial = self._device_serial or ""
+            cmd_parts = command.split()
+            if serial and len(cmd_parts) > 1:
+                cmd_parts.insert(1, "-s")
+                cmd_parts.insert(2, serial)
+
+            try:
+                proc = subprocess.run(
+                    cmd_parts, capture_output=True, text=True,
+                    encoding="utf-8", errors="replace", timeout=30,
+                )
+                output = proc.stdout.strip()
+                if proc.returncode == 0:
+                    self.after(0, self._append_terminal,
+                               f"[OK] Recommendation executed: {target_name}")
+                else:
+                    err = proc.stderr.strip() or output
+                    self.after(0, self._append_terminal,
+                               f"[ERROR] Failed: {target_name}: {err}")
+            except subprocess.TimeoutExpired:
+                self.after(0, self._append_terminal,
+                           f"[ERROR] Timeout: {target_name}")
+            except Exception as e:
+                self.after(0, self._append_terminal,
+                           f"[ERROR] Failed: {e}")
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def _generate_and_show_recommendations(self, result):
+        """Generate recommendations from scan results and display them."""
+        try:
+            remediation_result = None
+            remed = getattr(result, "_remediation", None)
+            if remed:
+                from remediation_engine import RemediationResult
+                remediation_result = RemediationResult()
+                remediation_result.actions = remed.get("actions", [])
+
+            third_party_packages = []
+            if hasattr(result, "_extracted_files") and result._extracted_files:
+                pkg_file = result._extracted_files.get("third_party_apps")
+                if pkg_file and pkg_file.exists():
+                    try:
+                        content = pkg_file.read_text(encoding="utf-8", errors="replace")
+                        for line in content.strip().split("\n"):
+                            line = line.strip()
+                            if line.startswith("package:"):
+                                pkg = line.split(":", 1)[1]
+                                if pkg:
+                                    third_party_packages.append(pkg)
+                    except Exception:
+                        pass
+
+            device_info = {}
+            if hasattr(result, "_extracted_files") and result._extracted_files:
+                info_file = result._extracted_files.get("device_info")
+                if info_file and info_file.exists():
+                    try:
+                        content = info_file.read_text(encoding="utf-8", errors="replace")
+                        for line in content.strip().split("\n"):
+                            if "=" in line:
+                                key, _, value = line.partition("=")
+                                key = key.strip()
+                                value = value.strip()
+                                if key == "ro.product.model":
+                                    device_info["model"] = value
+                                elif key == "ro.build.version.release":
+                                    device_info["android_version"] = value
+                                elif key == "ro.build.type":
+                                    device_info["build_type"] = value
+                                elif key == "ro.debuggable":
+                                    device_info["debuggable"] = value
+                    except Exception:
+                        pass
+
+            recs = generate_recommendations(
+                analysis_result=result,
+                remediation_result=remediation_result,
+                third_party_packages=third_party_packages,
+                device_info=device_info,
+            )
+
+            self.after(0, self._show_recommendations, recs)
+        except Exception as e:
+            logger.warning(f"Failed to generate recommendations: {e}")
+
+    # ============================================================
+    # ROW 8: PROGRESS + TERMINAL
     # ============================================================
 
     def _build_progress_panel(self):
         frame = ctk.CTkFrame(self, corner_radius=10)
-        frame.grid(row=7, column=0, padx=15, pady=(0, 8), sticky="nsew")
+        frame.grid(row=8, column=0, padx=15, pady=(0, 8), sticky="nsew")
         frame.grid_columnconfigure(0, weight=1)
         frame.grid_rowconfigure(1, weight=1)
 
@@ -947,7 +1191,6 @@ class ForensicScannerApp(ctk.CTk):
         self._append_terminal("[INFO] Pulling bugreport from phone... (may take 60-120s)")
 
         def _worker():
-            import shutil as _shutil
             tmp_dir = None
             try:
                 tmp_dir = Path(tempfile.mkdtemp(prefix="forensic_pull_"))
@@ -960,7 +1203,7 @@ class ForensicScannerApp(ctk.CTk):
                 cmd += ["bugreport", str(bugreport_zip)]
 
                 self.after(0, self._append_terminal, f"[INFO] Running: {' '.join(cmd)}")
-                proc = subprocess.run(
+                subprocess.run(
                     cmd, capture_output=True, text=True, encoding="utf-8", errors="replace",
                     timeout=180,
                 )
@@ -1002,17 +1245,17 @@ class ForensicScannerApp(ctk.CTk):
                 with zipfile.ZipFile(archive_path, "w", zipfile.ZIP_DEFLATED) as zf:
                     zf.write(bugreport_zip, "bugreport.zip")
                     manifest_lines = [
-                        f"Archive Type: Bugreport",
+                        "Archive Type: Bugreport",
                         f"Case ID: {self._case_entry.get().strip() or 'auto'}",
                         f"Device Serial: {serial}",
-                        f"Source: bugreport (ADB live pull)",
+                        "Source: bugreport (ADB live pull)",
                         f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S UTC', time.gmtime())}",
                         f"Bugreport Size: {size_mb:.1f} MB",
                     ]
                     zf.writestr("MANIFEST.txt", "\n".join(manifest_lines))
 
                 self.after(0, self._append_terminal,
-                           f"[OK] Archive created, starting scan...")
+                           "[OK] Archive created, starting scan...")
                 self._run_archive_scan(archive_path, tmp_dir)
 
             except subprocess.TimeoutExpired:
@@ -1406,7 +1649,7 @@ class ForensicScannerApp(ctk.CTk):
             self._dump_dir = Path(list(extracted.values())[0]).parent if extracted else None
 
             self._artifact_map = []
-            for key, fpath in extracted.items():
+            for _key, fpath in extracted.items():
                 fpath = Path(fpath)
                 if fpath.exists():
                     size = fpath.stat().st_size
@@ -1583,7 +1826,7 @@ class ForensicScannerApp(ctk.CTk):
             self._dump_dir = Path(list(extracted.values())[0]).parent if extracted else None
 
             self._artifact_map = []
-            for key, fpath in extracted.items():
+            for _key, fpath in extracted.items():
                 fpath = Path(fpath)
                 if fpath.exists():
                     size = fpath.stat().st_size
@@ -1677,15 +1920,24 @@ class ForensicScannerApp(ctk.CTk):
                 report = engine.contain_threat(
                     threat_verdict=verdict,
                     suspicious_packages=suspicious_pkgs,
-                    suspicious_ips=self._last_result.suspicious_ips if hasattr(self._last_result, 'suspicious_ips') else [],
+                    suspicious_ips=getattr(
+                        self._last_result, 'suspicious_ips', []
+                    ),
                     dump_dir=self._dump_dir,
                 )
 
                 self.after(0, self._append_terminal, f"[CONTAIN] {report.summary}")
                 for action in report.actions_taken:
-                    self.after(0, self._append_terminal, f"  [EXECUTED] {action['action_type']}: {action['details']}")
+                    self.after(
+                        0, self._append_terminal,
+                        f"  [EXECUTED] {action['action_type']}: {action['details']}",
+                    )
                 for action in report.actions_recommended:
-                    self.after(0, self._append_terminal, f"  [RECOMMENDED] {action['action_type']}: {action['details'][:80]}")
+                    detail = action['details'][:80]
+                    self.after(
+                        0, self._append_terminal,
+                        f"  [RECOMMENDED] {action['action_type']}: {detail}",
+                    )
 
             except Exception as e:
                 self.after(0, self._append_terminal, f"[ERROR] Containment failed: {e}")
