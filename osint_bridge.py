@@ -81,43 +81,53 @@ def _get_phone_number() -> str:
                 return digits
     except Exception:
         pass
-    try:
-        result = subprocess.run(
-            [ADB_BINARY, "shell", "getprop", "gsm.sim.operator.numeric"],
-            capture_output=True, text=True, timeout=5,
-        )
-        mcc_mnc = result.stdout.strip()
-        if mcc_mnc:
-            return f"SIM MCC/MNC: {mcc_mnc}"
-    except Exception:
-        pass
     return ""
 
 
 def _get_imei() -> str:
-    try:
-        result = subprocess.run(
-            [ADB_BINARY, "shell", "service", "call", "iphonesubinfo", "1"],
-            capture_output=True, text=True, timeout=10,
-        )
-        parts = re.findall(r"'(.*?)'", result.stdout)
-        if parts:
-            raw = "".join(parts)
-            digits = re.sub(r"[^0-9]", "", raw)
-            if len(digits) >= 15:
-                return digits[:15]
-    except Exception:
-        pass
+    # Method 1: dumpsys iphonesubinfo
     try:
         result = subprocess.run(
             [ADB_BINARY, "shell", "dumpsys", "iphonesubinfo"],
             capture_output=True, text=True, timeout=10,
         )
-        match = re.search(r"Device ID = (\d+)", result.stdout)
+        match = re.search(r"Device ID\s*[:=]\s*(\d+)", result.stdout)
         if match:
-            return match.group(1)[:15]
+            imei = match.group(1)
+            if len(imei) >= 15:
+                return imei[:15]
     except Exception:
         pass
+
+    # Method 2: service call with different method numbers
+    for method in [1, 3]:
+        try:
+            result = subprocess.run(
+                [ADB_BINARY, "shell", "service", "call", "iphonesubinfo", str(method)],
+                capture_output=True, text=True, timeout=10,
+            )
+            parts = re.findall(r"'(.*?)'", result.stdout)
+            if parts:
+                raw = "".join(parts)
+                digits = re.sub(r"[^0-9]", "", raw)
+                if len(digits) >= 15 and not digits.startswith("0000"):
+                    return digits[:15]
+        except Exception:
+            continue
+
+    # Method 3: getprop
+    for prop in ["ro.ril.oem.imei", "persist.radio.imei"]:
+        try:
+            result = subprocess.run(
+                [ADB_BINARY, "shell", "getprop", prop],
+                capture_output=True, text=True, timeout=5,
+            )
+            imei = result.stdout.strip()
+            if imei and len(imei) >= 15 and imei.isdigit():
+                return imei[:15]
+        except Exception:
+            continue
+
     return ""
 
 
@@ -130,7 +140,8 @@ def _get_sim_info() -> tuple[str, str, str]:
             [ADB_BINARY, "shell", "getprop", "gsm.sim.operator.numeric"],
             capture_output=True, text=True, timeout=5,
         )
-        mcc_mnc = result.stdout.strip()
+        raw = result.stdout.strip()
+        mcc_mnc = raw.split(",")[0].strip() if raw else ""
     except Exception:
         pass
     try:
@@ -138,7 +149,8 @@ def _get_sim_info() -> tuple[str, str, str]:
             [ADB_BINARY, "shell", "getprop", "gsm.sim.operator.alpha"],
             capture_output=True, text=True, timeout=5,
         )
-        operator = result.stdout.strip()
+        raw = result.stdout.strip()
+        operator = raw.split(",")[0].strip() if raw else ""
     except Exception:
         pass
     if mcc_mnc and mcc_mnc in MCC_MNC_MAP:
