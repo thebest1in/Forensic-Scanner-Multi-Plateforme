@@ -350,6 +350,21 @@ class ForensicScannerApp(ctk.CTk):
         ctk.CTkCheckBox(
             analysis_frame, text="Browser Forensics",
             variable=self._browser_var, font=ctk.CTkFont(size=10),
+        ).pack(anchor="w", padx=6, pady=1)
+        self._mobsf_var = ctk.BooleanVar(value=False)
+        ctk.CTkCheckBox(
+            analysis_frame, text="MobSF Static",
+            variable=self._mobsf_var, font=ctk.CTkFont(size=10),
+        ).pack(anchor="w", padx=6, pady=1)
+        self._openmf_var = ctk.BooleanVar(value=False)
+        ctk.CTkCheckBox(
+            analysis_frame, text="OpenMF Extract",
+            variable=self._openmf_var, font=ctk.CTkFont(size=10),
+        ).pack(anchor="w", padx=6, pady=1)
+        self._osint_var = ctk.BooleanVar(value=False)
+        ctk.CTkCheckBox(
+            analysis_frame, text="OSINT Lookup",
+            variable=self._osint_var, font=ctk.CTkFont(size=10),
         ).pack(anchor="w", padx=6, pady=(1, 3))
 
         # --- INTEL + ACTION column ---
@@ -1416,6 +1431,9 @@ class ForensicScannerApp(ctk.CTk):
                 run_intel=self._intel_var.get(),
                 run_entropy=getattr(self, '_entropy_var', None) and self._entropy_var.get(),
                 run_browser=getattr(self, '_browser_var', None) and self._browser_var.get(),
+                run_mobsf=getattr(self, '_mobsf_var', None) and self._mobsf_var.get(),
+                run_openmf=getattr(self, '_openmf_var', None) and self._openmf_var.get(),
+                run_osint=getattr(self, '_osint_var', None) and self._osint_var.get(),
                 run_correlation=getattr(self, '_correlation_var', None) and self._correlation_var.get(),
             )
 
@@ -1691,6 +1709,9 @@ class ForensicScannerApp(ctk.CTk):
                 run_intel=self._intel_var.get(),
                 run_entropy=getattr(self, '_entropy_var', None) and self._entropy_var.get(),
                 run_browser=getattr(self, '_browser_var', None) and self._browser_var.get(),
+                run_mobsf=getattr(self, '_mobsf_var', None) and self._mobsf_var.get(),
+                run_openmf=getattr(self, '_openmf_var', None) and self._openmf_var.get(),
+                run_osint=getattr(self, '_osint_var', None) and self._osint_var.get(),
                 run_correlation=getattr(self, '_correlation_var', None) and self._correlation_var.get(),
                 device_type=self._device_type_var.get(),
             )
@@ -1856,6 +1877,9 @@ class ForensicScannerApp(ctk.CTk):
                 run_intel=self._intel_var.get(),
                 run_entropy=getattr(self, '_entropy_var', None) and self._entropy_var.get(),
                 run_browser=getattr(self, '_browser_var', None) and self._browser_var.get(),
+                run_mobsf=getattr(self, '_mobsf_var', None) and self._mobsf_var.get(),
+                run_openmf=getattr(self, '_openmf_var', None) and self._openmf_var.get(),
+                run_osint=getattr(self, '_osint_var', None) and self._osint_var.get(),
                 run_correlation=getattr(self, '_correlation_var', None) and self._correlation_var.get(),
                 device_type=os_type.lower(),
             )

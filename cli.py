@@ -104,6 +104,9 @@ def _run_analysis(
         run_intel=full_tools,
         run_entropy=full_tools,
         run_browser=full_tools,
+        run_mobsf=full_tools,
+        run_openmf=full_tools,
+        run_osint=full_tools,
         run_correlation=True,
     )
     result._cli_extracted = extracted

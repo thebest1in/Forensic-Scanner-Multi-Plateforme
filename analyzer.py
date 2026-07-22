@@ -92,6 +92,25 @@ try:
 except ImportError:
     CORRELATION_AVAILABLE = False
 
+try:
+    from mobsf_bridge import analyze_apk, check_mobsf_available
+    MOBSF_AVAILABLE = True
+except ImportError:
+    MOBSF_AVAILABLE = False
+
+try:
+    from openmf_bridge import check_openmf_available
+    from openmf_bridge import extract_data as openmf_extract
+    OPENMF_AVAILABLE = True
+except ImportError:
+    OPENMF_AVAILABLE = False
+
+try:
+    from osint_bridge import lookup_device
+    OSINT_AVAILABLE = True
+except ImportError:
+    OSINT_AVAILABLE = False
+
 
 # ============================================================
 # LOG FILTER GATE — Strip benign noise before YARA scanning
@@ -171,6 +190,9 @@ class AnalysisResult:
         self.intel_results: list[dict] = []
         self.entropy_results: list[dict] = []
         self.browser_results: list[dict] = []
+        self.mobsf_results: list[dict] = []
+        self.openmf_results: list[dict] = []
+        self.osint_results: list[dict] = []
         self.correlation_result: dict | None = None
         self.composite_risk_score: int = 0
         self.composite_risk_level: str = "CLEAN"
@@ -205,6 +227,9 @@ class AnalysisResult:
             "intel_analysis": self.intel_results,
             "entropy_analysis": self.entropy_results,
             "browser_forensics": self.browser_results,
+            "mobsf_analysis": self.mobsf_results,
+            "openmf_extraction": self.openmf_results,
+            "osint_lookups": self.osint_results,
             "correlation": self.correlation_result,
             "composite_risk_score": self.composite_risk_score,
             "composite_risk_level": self.composite_risk_level,
@@ -327,6 +352,9 @@ def analyze(
     run_intel: bool = False,
     run_entropy: bool = False,
     run_browser: bool = False,
+    run_mobsf: bool = False,
+    run_openmf: bool = False,
+    run_osint: bool = False,
     run_correlation: bool = True,
     device_type: str = "android",
     adapter_info: dict | None = None,
@@ -347,6 +375,9 @@ def analyze(
         run_intel: Enable OTX + AbuseIPDB live IP intelligence
         run_entropy: Enable Shannon entropy analysis
         run_browser: Enable Chrome/WebView browser forensics
+        run_mobsf: Enable MobSF APK static analysis
+        run_openmf: Enable OpenMF data extraction (requires root)
+        run_osint: Enable OSINT phone/IMEI lookups
         run_correlation: Enable cross-tool correlation (default: True)
         device_type: "android" or "ios"
         adapter_info: Optional adapter metadata
@@ -697,10 +728,58 @@ def analyze(
             logger.warning(f"Browser forensics failed: {e}")
             return ("browser", "error", [])
 
+    def _run_mobsf():
+        if not run_mobsf:
+            return ("mobsf", "disabled", [])
+        apk_path = extracted_files.get("base_apk")
+        if not apk_path or not apk_path.exists():
+            apk_files = [v for v in extracted_files.values()
+                         if v.exists() and v.suffix == ".apk"]
+            if apk_files:
+                apk_path = apk_files[0]
+        if not apk_path or not apk_path.exists():
+            return ("mobsf", "skipped_no_input", [])
+        if not MOBSF_AVAILABLE or not check_mobsf_available():
+            return ("mobsf", "unavailable", [])
+        try:
+            mobsf_result = analyze_apk(apk_path, on_progress=on_progress)
+            return ("mobsf", "ok", [mobsf_result.to_dict()])
+        except Exception as e:
+            logger.warning(f"MobSF analysis failed: {e}")
+            return ("mobsf", "error", [])
+
+    def _run_openmf():
+        if not run_openmf:
+            return ("openmf", "disabled", [])
+        if not OPENMF_AVAILABLE or not check_openmf_available():
+            return ("openmf", "unavailable", [])
+        try:
+            openmf_result = openmf_extract(
+                session_name=f"scan_{int(time.time())}",
+                on_progress=on_progress,
+            )
+            return ("openmf", "ok", [openmf_result.to_dict()])
+        except Exception as e:
+            logger.warning(f"OpenMF extraction failed: {e}")
+            return ("openmf", "error", [])
+
+    def _run_osint():
+        if not run_osint:
+            return ("osint", "disabled", [])
+        if not OSINT_AVAILABLE:
+            return ("osint", "unavailable", [])
+        try:
+            osint_result = lookup_device(on_progress=on_progress)
+            return ("osint", "ok", [osint_result.to_dict()])
+        except Exception as e:
+            logger.warning(f"OSINT lookup failed: {e}")
+            return ("osint", "error", [])
+
     # Dispatch all tool phases concurrently
     tool_runners = [
         _run_mvt, _run_aleapp, _run_capa, _run_apkid,
         _run_quark, _run_intel, _run_entropy, _run_browser,
+        _run_mobsf, _run_openmf, _run_osint,
     ]
     num_workers = min(len(tool_runners), 6)
     with ThreadPoolExecutor(max_workers=num_workers) as executor:
@@ -727,6 +806,12 @@ def analyze(
                     result.entropy_results = data
                 elif tool_name == "browser":
                     result.browser_results = data
+                elif tool_name == "mobsf":
+                    result.mobsf_results = data
+                elif tool_name == "openmf":
+                    result.openmf_results = data
+                elif tool_name == "osint":
+                    result.osint_results = data
                 pct = 88 + int((completed / len(tool_runners)) * 8)
                 _report(on_progress, pct, f"Tools: {completed}/{len(tool_runners)} done ({tool_name})")
                 if data:
@@ -1255,6 +1340,42 @@ def _build_summary(result: AnalysisResult) -> str:
             )
             for sv in b.get("suspicious_visits", [])[:5]:
                 lines.append(f"    -> {sv.get('url', '')[:80]}")
+
+    if result.mobsf_results:
+        lines.append(f"\n--- MobSF APK Analysis ({len(result.mobsf_results)}) ---")
+        for m in result.mobsf_results:
+            lines.append(
+                f"  Package: {m.get('package_name', '')} "
+                f"| AppSec: {m.get('appsec_score', 0):.1f}/100 "
+                f"| Risk: {m.get('highest_risk', '?').upper()} "
+                f"| Dangerous perms: {len(m.get('dangerous_permissions', []))} "
+                f"| Secrets: {len(m.get('secrets', []))}"
+            )
+            if m.get("spyware_detected"):
+                lines.append(f"    -> SPYWARE DETECTED: {', '.join(m['spyware_detected'])}")
+
+    if result.openmf_results:
+        lines.append(f"\n--- OpenMF Data Extraction ({len(result.openmf_results)}) ---")
+        for o in result.openmf_results:
+            lines.append(
+                f"  Status: {o.get('severity', '?')} "
+                f"| Root: {o.get('has_root', False)} "
+                f"| Total records: {o.get('total_extracted', 0)} "
+                f"| DBs: {len(o.get('extracted_dbs', []))}"
+            )
+
+    if result.osint_results:
+        lines.append(f"\n--- OSINT Lookups ({len(result.osint_results)}) ---")
+        for oi in result.osint_results:
+            if oi.get("imei"):
+                imei_short = oi['imei'][:8]
+                sim_op = oi.get('sim_operator', '')
+                sim_ctry = oi.get('sim_country', '')
+                lines.append(f"  IMEI: {imei_short}... | SIM: {sim_op} ({sim_ctry})")
+            if oi.get("lookup_urls"):
+                for _category, urls in oi["lookup_urls"].items():
+                    for u in urls[:2]:
+                        lines.append(f"    -> {u['name']}: {u['url'][:80]}")
 
     corr = result.correlation_result or {}
     if corr.get("total_correlations", 0) > 0:
