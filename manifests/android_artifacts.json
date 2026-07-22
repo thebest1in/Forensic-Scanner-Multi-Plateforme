@@ -578,6 +578,24 @@
                     "yara_scan": false,
                     "ip_extract": false,
                     "timeline": false
+                },
+                {
+                    "id": "wifi_mac_address",
+                    "adb_cmd": "shell cat /sys/class/net/wlan0/address",
+                    "output_file": "wifi_mac.txt",
+                    "description": "Extracting WiFi MAC address (device fingerprinting)...",
+                    "yara_scan": false,
+                    "ip_extract": false,
+                    "timeline": false
+                },
+                {
+                    "id": "sim_country",
+                    "adb_cmd": "shell getprop gsm.sim.operator.iso-country && adb shell getprop gsm.operator.iso-country",
+                    "output_file": "sim_country.txt",
+                    "description": "Extracting SIM country and operator ISO codes...",
+                    "yara_scan": false,
+                    "ip_extract": false,
+                    "timeline": false
                 }
             ]
         }

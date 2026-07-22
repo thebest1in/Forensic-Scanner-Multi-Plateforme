@@ -4,14 +4,16 @@ from pathlib import Path
 import core
 from core import ADB_TIMEOUT, create_dump_dir
 
-MANIFEST_PATH = Path(__file__).parent / "manifests" / "artifacts.json"
+MANIFEST_PATH = Path(__file__).parent / "manifests" / "android_artifacts.json"
+LEGACY_MANIFEST_PATH = Path(__file__).parent / "manifests" / "artifacts.json"
 
 
 def load_manifest() -> dict:
     """Load and validate the artifacts manifest."""
-    if not MANIFEST_PATH.exists():
-        raise FileNotFoundError(f"Manifest not found: {MANIFEST_PATH}")
-    with open(MANIFEST_PATH, encoding="utf-8") as f:
+    path = MANIFEST_PATH if MANIFEST_PATH.exists() else LEGACY_MANIFEST_PATH
+    if not path.exists():
+        raise FileNotFoundError(f"No manifest found: {MANIFEST_PATH} or {LEGACY_MANIFEST_PATH}")
+    with open(path, encoding="utf-8") as f:
         manifest = json.load(f)
     if "profiles" not in manifest:
         raise ValueError("Manifest missing 'profiles' key")

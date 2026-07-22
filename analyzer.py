@@ -18,6 +18,12 @@ except ImportError:
     REQUESTS_AVAILABLE = False
 
 from core import KNOWN_IPS_FILE, YARA_RULES_FILE, logger
+from forensic_modules.account_analysis import check_accounts
+from forensic_modules.network_forensics import check_dns_configuration, check_network_connections
+from forensic_modules.partition_verification import check_partition_integrity
+from forensic_modules.proxy_vpn_detection import check_proxy_config
+from forensic_modules.signature_verification import check_apk_signatures
+from forensic_modules.system_integrity import check_system_properties
 from yara_context import classify_yara_match, representative_evidence
 from yara_diagnostics import collect_match_evidence
 
@@ -1488,14 +1494,10 @@ def _process_forensic_artifacts(result: AnalysisResult, extracted_files: dict[st
     if partition_file and partition_file.exists():
         try:
             content = partition_file.read_text(encoding="utf-8", errors="replace")
-            if "error" in content.lower() or "mismatch" in content.lower():
-                forensic_findings.append({
-                    "type": "PARTITION_TAMPERING",
-                    "severity": "CRITICAL",
-                    "evidence": "Partition integrity verification failed",
-                    "file": partition_file.name,
-                })
-                logger.warning("Forensic finding: Partition integrity verification failed")
+            findings = check_partition_integrity(content, partition_file.name)
+            forensic_findings.extend(findings)
+            for f in findings:
+                logger.warning(f"Forensic finding: {f['type']} — {f['evidence'][:80]}")
         except Exception as e:
             logger.warning(f"Failed to process partition integrity: {e}")
 
@@ -1572,6 +1574,80 @@ def _process_forensic_artifacts(result: AnalysisResult, extracted_files: dict[st
                 logger.warning(f"Forensic finding: High certificate count: {cert_count}")
         except Exception as e:
             logger.warning(f"Failed to process system certificates: {e}")
+
+    # --- NEW MODULES ---
+
+    # System integrity verification
+    sys_props_file = extracted_files.get("system_properties")
+    if sys_props_file and sys_props_file.exists():
+        try:
+            content = sys_props_file.read_text(encoding="utf-8", errors="replace")
+            findings = check_system_properties(content, sys_props_file.name)
+            forensic_findings.extend(findings)
+            for f in findings:
+                logger.warning(f"Forensic finding: {f['type']} — {f['evidence'][:80]}")
+        except Exception as e:
+            logger.warning(f"Failed to process system properties: {e}")
+
+    # APK signature verification
+    sig_file = extracted_files.get("apk_signature")
+    if sig_file and sig_file.exists():
+        try:
+            content = sig_file.read_text(encoding="utf-8", errors="replace")
+            findings = check_apk_signatures(content, sig_file.name)
+            forensic_findings.extend(findings)
+            for f in findings:
+                logger.warning(f"Forensic finding: {f['type']} — {f['evidence'][:80]}")
+        except Exception as e:
+            logger.warning(f"Failed to process APK signatures: {e}")
+
+    # Network forensics — listening ports
+    netstat_file = extracted_files.get("network_connections")
+    if netstat_file and netstat_file.exists():
+        try:
+            content = netstat_file.read_text(encoding="utf-8", errors="replace")
+            findings = check_network_connections(content, netstat_file.name)
+            forensic_findings.extend(findings)
+            for f in findings:
+                logger.warning(f"Forensic finding: {f['type']} — {f['evidence'][:80]}")
+        except Exception as e:
+            logger.warning(f"Failed to process network connections: {e}")
+
+    # DNS configuration
+    dns_file = extracted_files.get("dns_configuration")
+    if dns_file and dns_file.exists():
+        try:
+            content = dns_file.read_text(encoding="utf-8", errors="replace")
+            findings = check_dns_configuration(content, dns_file.name)
+            forensic_findings.extend(findings)
+            for f in findings:
+                logger.warning(f"Forensic finding: {f['type']} — {f['evidence'][:80]}")
+        except Exception as e:
+            logger.warning(f"Failed to process DNS configuration: {e}")
+
+    # Account analysis
+    accounts_file = extracted_files.get("registered_accounts")
+    if accounts_file and accounts_file.exists():
+        try:
+            content = accounts_file.read_text(encoding="utf-8", errors="replace")
+            findings = check_accounts(content, accounts_file.name)
+            forensic_findings.extend(findings)
+            for f in findings:
+                logger.warning(f"Forensic finding: {f['type']} — {f['evidence'][:80]}")
+        except Exception as e:
+            logger.warning(f"Failed to process accounts: {e}")
+
+    # Proxy/VPN detection
+    proxy_file = extracted_files.get("vpn_proxy_config")
+    if proxy_file and proxy_file.exists():
+        try:
+            content = proxy_file.read_text(encoding="utf-8", errors="replace")
+            findings = check_proxy_config(content, proxy_file.name)
+            forensic_findings.extend(findings)
+            for f in findings:
+                logger.warning(f"Forensic finding: {f['type']} — {f['evidence'][:80]}")
+        except Exception as e:
+            logger.warning(f"Failed to process proxy config: {e}")
 
     # Store forensic findings in result
     if forensic_findings:
