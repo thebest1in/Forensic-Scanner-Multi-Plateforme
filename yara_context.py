@@ -4,17 +4,58 @@ from typing import Any
 
 AGGREGATE_ARTIFACT = "android_bugreport_aggregate"
 
+FORENSIC_TOOL_ALLOWLIST = {
+    "frida", "hooking_framework", "xposed", "substrate", "magisk", "root",
+}
+
+KNOWN_DUAL_USE_PACKAGES = {
+    "com.anydesk.anydeskandroid", "com.teamviewer.teamviewer",
+    "com.logmein.rescue", "com.splashtop.raclient", "com.realvnc.remote",
+    "com.google.android.apps.chromeremotedesktop",
+}
+
 
 def classify_yara_match(
     rule: str,
     meta: dict[str, Any],
     artifact_path: Path,
     evidence: Sequence[dict[str, Any]],
+    *,
+    forensic_context: bool = False,
 ) -> dict[str, Any]:
     """Assess whether a raw YARA match is direct evidence or aggregate context."""
     artifact_type = artifact_type_for(artifact_path)
     severity = str(meta.get("severity", "medium")).lower()
     if artifact_type != AGGREGATE_ARTIFACT:
+        tags = {str(t).lower() for t in meta.get("tags", [])}
+
+        if forensic_context and tags & FORENSIC_TOOL_ALLOWLIST:
+            return {
+                "classification": "authorized_forensic_tooling",
+                "confidence": 0.1,
+                "authoritative": False,
+                "reason": "YARA rule matches a known forensic analysis tool; expected during authorized investigation.",
+            }
+
+        matched_values = " ".join(
+            str(item.get("matched_value_preview", "")) for item in evidence
+        ).lower()
+        dual_use_hit = any(
+            pkg in matched_values for pkg in KNOWN_DUAL_USE_PACKAGES
+        )
+        if dual_use_hit or (
+            forensic_context and "remote_access" in tags and "rat" in tags
+        ):
+            return {
+                "classification": "dual_use_observation",
+                "confidence": 0.3,
+                "authoritative": False,
+                "reason": (
+                    "Matched a known commercial remote-access or dual-use "
+                    "application; requires user confirmation."
+                ),
+            }
+
         confidence = {"critical": 0.95, "high": 0.85, "medium": 0.65}.get(severity, 0.5)
         return {
             "classification": "strong suspicious evidence",

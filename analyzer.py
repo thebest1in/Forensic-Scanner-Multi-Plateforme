@@ -358,6 +358,7 @@ def analyze(
     run_correlation: bool = True,
     device_type: str = "android",
     adapter_info: dict | None = None,
+    forensic_context: bool = True,
 ) -> AnalysisResult:
     """Run full threat analysis with optional log pre-filtering and advanced tools.
 
@@ -451,11 +452,14 @@ def analyze(
                 scanned_data = content.encode("utf-8", errors="replace") if matches else b""
                 for match in matches:
                     all_evidence = collect_match_evidence(match, file_path, scanned_data)
+                    match_meta = dict(getattr(match, "meta", {}))
+                    match_meta["tags"] = list(match.tags)
                     assessment = classify_yara_match(
                         match.rule,
-                        dict(getattr(match, "meta", {})),
+                        match_meta,
                         file_path,
                         all_evidence,
+                        forensic_context=forensic_context,
                     )
                     evidence = representative_evidence(all_evidence)
                     for item in evidence:
@@ -758,6 +762,8 @@ def analyze(
                 session_name=f"scan_{int(time.time())}",
                 on_progress=on_progress,
             )
+            if not openmf_result.has_root:
+                return ("openmf", "skipped_no_root", [])
             return ("openmf", "ok", [openmf_result.to_dict()])
         except Exception as e:
             logger.warning(f"OpenMF extraction failed: {e}")
@@ -815,7 +821,8 @@ def analyze(
                 pct = 88 + int((completed / len(tool_runners)) * 8)
                 _report(on_progress, pct, f"Tools: {completed}/{len(tool_runners)} done ({tool_name})")
                 if data:
-                    logger.warning(f"{tool_name}: {len(data)} findings")
+                    label = "observations" if tool_name in ("osint", "openmf") else "findings"
+                    logger.warning(f"{tool_name}: {len(data)} {label}")
             except Exception as e:
                 logger.warning(f"Tool future failed: {e}")
 
@@ -1187,10 +1194,15 @@ def _explain_verdict(result: AnalysisResult) -> list[str]:
                 + "."
             )
         else:
-            reasons.append(
-                f"Final verdict escalated to {result.verdict} by an authoritative "
-                "high-confidence signal; inspect tool findings for supporting evidence."
-            )
+            if result.verdict == ThreatVerdict.CLEAN:
+                reasons.append(
+                    "No corroborating malicious evidence found across all analysis tools."
+                )
+            else:
+                reasons.append(
+                    f"Final verdict escalated to {result.verdict} by an authoritative "
+                    "high-confidence signal; inspect tool findings for supporting evidence."
+                )
     return reasons
 
 
@@ -1200,16 +1212,25 @@ def _build_summary(result: AnalysisResult) -> str:
         filter_note = ""
         if fstat.get("noise_reduction_pct", 0) > 0:
             filter_note = f"\nLog filter: {fstat['noise_reduction_pct']:.0f}% noise removed."
-        contextual_matches = [
-            match for match in result.matched_rules
-            if not match.get("authoritative", True)
+        auth_matches = [
+            m for m in result.matched_rules if m.get("authoritative", True)
         ]
-        yara_note = (
-            f"\n{len(contextual_matches)} context-only YARA matches retained for review; "
-            "none qualified as direct malware evidence."
-            if contextual_matches
-            else "\nNo YARA rule matches."
-        )
+        ctx_matches = [
+            m for m in result.matched_rules if not m.get("authoritative", True)
+        ]
+        yara_note = ""
+        if auth_matches:
+            yara_note = (
+                f"\n{len(auth_matches)} YARA match(es) detected"
+                f" (see report for details)."
+            )
+        if ctx_matches:
+            yara_note += (
+                f"\n{len(ctx_matches)} contextual match(es) retained for review; "
+                "none qualified as direct malware evidence."
+            )
+        if not result.matched_rules:
+            yara_note = "\nNo YARA rule matches."
         return (
             f"[CLEAN] DEVICE CLEAN\n\n"
             f"Scanned {result.scanned_files} forensic artifacts.{filter_note}\n"

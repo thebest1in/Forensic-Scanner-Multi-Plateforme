@@ -53,10 +53,13 @@ class OSINTResult:
         return "INFO"
 
     def to_dict(self) -> dict:
+        imei_display = self.imei
+        if len(self.imei) >= 11:
+            imei_display = f"{self.imei[:8]}{'*' * (len(self.imei) - 11)}{self.imei[-3:]}"
         return {
             "available": self.available,
             "phone_number": self.phone_number,
-            "imei": self.imei,
+            "imei": imei_display,
             "sim_operator": self.sim_operator,
             "sim_country": self.sim_country,
             "mcc_mnc": self.mcc_mnc,
