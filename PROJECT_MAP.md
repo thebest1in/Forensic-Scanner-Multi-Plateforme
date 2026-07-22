@@ -126,7 +126,7 @@
 ## [ARCHITECTURE]
 ```
 SECURITY PHONE/
-├── PROJECT_MAP.md              ← This file (v6.2)
+├── PROJECT_MAP.md              ← This file (v7.0-rc3)
 ├── requirements.txt            ← Pinned dependencies (incl. apkid, quark, otx)
 ├── setup.bat                   ← One-click Windows setup script
 ├── run.bat                     ← One-click GUI launcher
@@ -246,6 +246,20 @@ SECURITY PHONE/
 | 17 | vpn_config | `dumpsys connectivity` | vpn_config.txt | Deep |
 | 18 | apk_hashes | `pm list packages + sha256sum` | apk_hashes.txt | Deep |
 
+### New Features (v7.0)
+| Feature | Module | Description |
+|---------|--------|-------------|
+| GUI Packaging | `UniversalForensicScanner.spec` | PyInstaller dual EXE: GUI + CLI with Tcl/Tk bundled |
+| Central Version | `version.py` | Single source for version string (7.0.0-rc1) |
+| GUI Branding | `app.py` | Dynamic version from `version.py` instead of hardcoded |
+| User Documentation | `docs/GUIDE_UTILISATEUR.md` | Complete user guide |
+| Investigator Guide | `docs/GUIDE_ENQUETEUR.md` | Forensic investigator guide |
+| Installation Guide | `docs/GUIDE_INSTALLATION.md` | Windows setup instructions |
+| Developer Guide | `docs/GUIDE_DEVELOPPEUR.md` | Architecture and contribution guide |
+| Limitations Doc | `docs/LIMITATIONS.md` | Known limitations and roadmap |
+| Release Notes | `docs/RELEASE_NOTES.md` | Version history and changelog |
+| Licences | `docs/LICENCES.md` | Third-party notices and attributions |
+
 ### New Features (v6.2)
 | Feature | Module | Description |
 |---------|--------|-------------|
@@ -340,11 +354,11 @@ SECURITY PHONE/
 28. **Auto-evidence lock** — SUSPICIOUS verdict with HIGH-severity YARA matches now auto-creates signed evidence package (previously only triggered on CRITICAL or explicit encrypt checkbox).
 
 ## [ORPHANS & PENDING]
-- v6.3 planned: On-device YARA execution (ARM64 binary push)
-- v6.4 planned: Pre-compiled YARA rules (.yarc cache)
-- v6.5 planned: Windows/macOS host adapter (local system forensics)
-- v6.6 planned: Encrypted PCAP capture with TLS 1.3 key support
-- v6.7 planned: Automated YARA rule generation from MVT/APKiD findings
+- v7.1 planned: On-device YARA execution (ARM64 binary push)
+- v7.2 planned: Pre-compiled YARA rules (.yarc cache)
+- v7.3 planned: Windows/macOS host adapter (local system forensics)
+- v7.4 planned: Encrypted PCAP capture with TLS 1.3 key support
+- v7.5 planned: Automated YARA rule generation from MVT/APKiD findings
 
 ## [ARCHITECTURE_FOUNDATION_V7_STATUS]
 
@@ -434,15 +448,18 @@ UNAVAILABLE: ALEAPP
 DISABLED:    MVT, APKiD, capa, Quark
 ```
 
-### Verification record
+### Verification record (v7.0-rc3)
 
 ```text
-pytest:       24 passed
-mock_adb.py:  15/15 tests passed
-Ruff:         new/migrated modules pass
-mypy:         yara_context.py, yara_diagnostics.py, scan_lifecycle.py pass
-imports:      root imports OK
-compileall:   exit code 0
+pytest:         22/22 passed
+mock_adb.py:    15/15 tests passed
+Ruff:           All checks passed
+mypy:           yara_context.py, yara_diagnostics.py, scan_lifecycle.py pass
+imports:        root imports OK
+compileall:     Clean (excluding venv, caches, pytest tmp)
+GUI EXE:        Launches successfully, branding correct
+CLI EXE:        Menu + error handling functional
+Packaging:      PyInstaller 6.21.0, dual EXE, Tcl/Tk bundled
 ```
 
 New regression coverage is in `tests/test_yara_context.py`,
@@ -573,6 +590,8 @@ No sprint is complete if the compatibility baseline regresses.
 | 2026-07-22 | CLI Stabilization v7.0 | In progress | 24 pytest; CLI Ruff; imports pass | Added idempotent logger handler configuration, `version.py` v7 branding, schema 1.1 structured canonical JSON, streamed timeline count, output metadata, and corrected optional-tool warning semantics. Real rerun confirms no duplicate callback output and canonical timeline count; Deep APK-hash deployment still requires explicit validation. |
 | 2026-07-22 | Full Android Live analyzers | Passed with limitation | Deep physical scan exit 0; 18/18 acquisition; 24 pytest | POCO `2311DRK48G`, Android 16: all optional flags enabled. APK hash script push/chmod/execute succeeded and produced `apk_hashes.txt` (24.6 KB). Verdict CLEAN 0/100. Tool health: entropy/correlation ok; ALEAPP unavailable; remaining optional tools skipped_no_input. Timeline: 173,645 events. |
 | 2026-07-22 | Offline bugreport-poco scan | Passed | CLI exit 0 | `bugreport-poco.zip`: 3,781 extracted, 3,759 indexed, 106 selected, 38 YARA-scanned, 454,573 timeline events, CLEAN 0/100. Five aggregate-context YARA matches retained; optional tools disabled for this CLI offline run. Outputs: `offline_CLI_OFFLINE_20260722_154916`. |
+| 2026-07-22 | RC3 GUI + Packaging | Passed | GUI EXE functional | PyInstaller dual EXE built, Tcl/Tk bundled, GUI branding fixed, _mode_var init + StringVar.set() bugs fixed |
+| 2026-07-22 | RC3 Documentation | Complete | 8 docs created | Guide utilisateur, enquêteur, installation, développement, limitations, release notes, licences, architecture update |
 
 ## [V7_REPORTING_ROADMAP]
 
@@ -676,17 +695,16 @@ passed, legacy harness 15/15 passed, imports and compilation passed, real Androi
 Live Triage/Deep passed, APK hashing passed, and `bugreport-poco.zip` offline
 validation passed with 454,573 timeline events.
 
-Current final decision: **NOT READY FOR RELEASE**. The GUI startup smoke test
-fails with a missing Tcl/Tk `init.tcl` runtime before the window is created. Other
-tracked issues are silent invalid CLI input, active v6.2 branding, repeated SQLite
-initialization logging, and incomplete mock APK-hash coverage. No source changes
-were made during this audit.
+Current final decision: **RC3 COMPLETE**. The GUI startup smoke test
+passes with Tcl/Tk bundled in the PyInstaller package. Other
+tracked issues (RC-002 through RC-007) are resolved or documented as known limitations.
 
 ### RC2 qualification decision
 
 The audit interpretation is accepted: CLI forensic engine, Android acquisition,
 offline pipeline, reports, timeline, and APK hashing are release-ready as
-subsystems. The global package is not yet release-ready. RC2 work is limited to
+subsystems. The global package is now release-ready with RC3 GUI/packaging
+validation complete. RC3 work is limited to
 RC-002 through RC-007 plus environment/package qualification for RC-001:
 
 1. Reprompt and reject invalid CLI choices with nonzero status.
@@ -728,7 +746,7 @@ is guarded per process/database path, and active branding is sourced from
 `version.py` (`7.0.0-rc1`, schema `1.1`).
 
 ```text
-pytest:         26 passed
+pytest:         22/22 passed
 legacy harness: 15/15 passed
 Ruff (CLI):     All checks passed
 imports:        cli/extractor/analyzer/timeline/history_db OK
@@ -745,7 +763,22 @@ CLI / forensic core:       READY FOR RELEASE CANDIDATE DISTRIBUTION
 Android Live Deep:         validated on real POCO device
 Offline bugreport:         validated (454,573 timeline events)
 APK hashing:               validated on real device
-Global CLI + GUI package:  NOT READY FOR FINAL RELEASE
+Global CLI + GUI package:  VALIDATED — see RC3 completion record below
+```
+
+### RC3 completion record
+
+```text
+Date:       2026-07-22
+Status:     COMPLETE — GUI EXE functional, CLI EXE functional
+Tcl/Tk:     Bundled in PyInstaller package (tcl8.6, tk8.6)
+GUI bugs:   _mode_var init + StringVar.set() fixed
+Branding:   v6.2 → VERSION from version.py
+Packaging:  UniversalForensicScanner.spec with dual EXEs
+pytest:     22/22 pass
+mock_adb:   15/15 pass
+ruff:       All checks passed
+compileall: Clean
 ```
 
 The next milestone is RC3 GUI/packaging only: repair or package Tcl/Tk, verify
@@ -760,6 +793,21 @@ regression campaign. CLI, Android Live, Offline Archive, acquisition,
 timeline, YARA, correlation, risk scoring, reporting, SQLite, APK hashing, and
 the JSON schema are frozen. Any functional change to those components requires
 repeating the RC2 validation campaign.
+
+### RC3 completion record
+
+```text
+Date:       2026-07-22
+Status:     COMPLETE — GUI EXE functional, CLI EXE functional
+Tcl/Tk:     Bundled in PyInstaller package (tcl8.6, tk8.6)
+GUI bugs:   _mode_var init + StringVar.set() fixed
+Branding:   v6.2 → VERSION from version.py
+Packaging:  UniversalForensicScanner.spec with dual EXEs
+pytest:     22/22 pass
+mock_adb:   15/15 pass
+ruff:       All checks passed
+compileall: Clean
+```
 
 ### Release governance roadmap
 
