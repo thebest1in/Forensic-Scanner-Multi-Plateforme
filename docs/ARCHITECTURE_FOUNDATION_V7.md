@@ -1,7 +1,7 @@
 # Architecture Foundation v7.0
 
 Status: Phase 1 implementation plan and baseline assessment  
-Authoritative product: repository root (v6.2)  
+Authoritative product: repository root (v7.0-rc3)  
 Reference-only code: `Forensic-Scanner-Multi-Plateforme/`
 
 ## 1. Current architecture assessment
@@ -15,14 +15,14 @@ optional network intelligence. `custody.py` packages and signs evidence after
 analysis. `timeline.py` produces CSV dictionaries. `archive_engine.py` supports
 offline archives. The GUI directly coordinates most of these modules.
 
-The v6.2 pipeline is operational and must remain the release path while v7
-contracts are introduced beside it. The existing `mock_adb.py` harness is the
+The v7.0-rc3 pipeline is operational and is the release path. The v6.2
+pipeline is preserved as a compatibility baseline. The existing `mock_adb.py` harness is the
 regression gate.
 
-### Current data flow
+### Current data flow (v7.0-rc3)
 
 ```text
-GUI / offline CLI
+GUI / CLI
   -> platform adapter or extractor
   -> dict[artifact_id, Path]
   -> monolithic analyzer and optional bridges
