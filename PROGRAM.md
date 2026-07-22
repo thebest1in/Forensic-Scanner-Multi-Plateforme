@@ -38,3 +38,4 @@ remote cleanup. Disabled and no-input analyzers are not treated as warnings.
 | `docs/LIMITATIONS.md` | Limitations connues |
 | `docs/RELEASE_NOTES.md` | Notes de version |
 | `docs/LICENCES.md` | Licences et attributions |
+| `docs/FULL_FORENSIC_REPORT.md` | Rapport forensique complet (POCO 2311DRK48G) |

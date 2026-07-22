@@ -77,6 +77,7 @@ Voir `docs/GUIDE_UTILISATEUR.md` pour les détails complets.
 | `docs/LIMITATIONS.md` | Limitations connues |
 | `docs/RELEASE_NOTES.md` | Notes de version |
 | `docs/LICENCES.md` | Licences et attributions |
+| `docs/FULL_FORENSIC_REPORT.md` | Rapport forensique complet (POCO 2311DRK48G) |
 | `PROJECT_MAP.md` | Carte du projet et architecture |
 | `PROGRAM.md` | Guide programme CLI |
 

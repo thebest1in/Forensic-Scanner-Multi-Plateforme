@@ -683,6 +683,11 @@ Read-only checks: devices -l, getprop, serial, third-party package listing
 Result:          all commands succeeded
 ```
 
+Full forensic scan report: `docs/FULL_FORENSIC_REPORT.md` — 20-check IOC analysis
+covering root detection, spyware packages, accessibility services, network
+connections, DNS, WiFi, location, battery, filesystem, persistence, system
+integrity, VPN, AppOps, and app permissions. Overall: NO INDICATORS OF COMPROMISE.
+
 The CLI Live workflow remains the approved automation path. No install,
 uninstall, shell write, remediation, or containment command was executed during
 this validation.
