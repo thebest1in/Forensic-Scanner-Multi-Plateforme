@@ -1,21 +1,23 @@
-import customtkinter as ctk
 import hashlib
+import shutil
 import subprocess
+import tempfile
 import threading
 import time
 import tkinter as tk
-from tkinter import filedialog, messagebox
-from pathlib import Path
-import tempfile
-import shutil
 import zipfile
+from pathlib import Path
+from tkinter import filedialog, messagebox
 
-from core import logger, cleanup_dump_dir, BASE_DIR, ADB_BINARY
-from usb_monitor import USBMonitor, DeviceState
-from extractor import run_extraction, get_profile_commands
-from analyzer import analyze, save_report, ThreatVerdict
+import customtkinter as ctk
+
+from analyzer import ThreatVerdict, analyze, save_report
+from core import ADB_BINARY, BASE_DIR, cleanup_dump_dir, logger
+from extractor import get_profile_commands, run_extraction
 from ioc_sync import sync_ioc_feeds
 from scan_lifecycle import ScanLifecycle, ScanStage, StageTimeoutError, run_with_timeout
+from usb_monitor import DeviceState, USBMonitor
+from version import VERSION
 
 STATE_COLORS = {
     DeviceState.DISCONNECTED: "#e74c3c",
@@ -47,7 +49,7 @@ ctk.set_default_color_theme("blue")
 class ForensicScannerApp(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("Universal Forensic Scanner v6.2")
+        self.title(f"Universal Forensic Scanner {VERSION}")
         self.geometry("960x820")
         self.minsize(860, 700)
         self.protocol("WM_DELETE_WINDOW", self._on_close)
@@ -62,6 +64,7 @@ class ForensicScannerApp(ctk.CTk):
         self._last_result = None
         self._offline_archive: Path | None = None
         self._linux_target: str | None = None
+        self._mode_var = ctk.StringVar(value="live")
 
         self._artifact_map: list[dict] = []
         self._filtered_artifacts: list[dict] = []
@@ -101,7 +104,7 @@ class ForensicScannerApp(ctk.CTk):
         ).pack(side="left")
         ctk.CTkLabel(
             frame,
-            text="v6.2 \u2014 12-Phase Analysis + Correlation",
+            text=f"{VERSION} — 12-Phase Analysis + Correlation",
             font=ctk.CTkFont(size=10),
             text_color="gray",
         ).pack(side="left", padx=(8, 0), pady=(4, 0))
@@ -1045,7 +1048,7 @@ class ForensicScannerApp(ctk.CTk):
         self._scan_running = True
         self._last_progress = 0.0
         self._usb_monitor.pause()
-        self._mode_var = ctk.StringVar(value="offline")
+        self._mode_var.set("offline")
         self._set_buttons_scanning("SCANNING...")
         self._last_result = None
         self._clear_results()
@@ -1207,8 +1210,8 @@ class ForensicScannerApp(ctk.CTk):
             if self._timeline_var.get() and self._dump_dir:
                 lifecycle.transition(ScanStage.TIMELINE)
                 self.after(0, self._update_progress, 84, "Generating forensic timeline...")
-                from timeline import build_timeline
                 from extractor import get_profile_commands as _gpc
+                from timeline import build_timeline
                 try:
                     timeline_path = run_with_timeout(
                         ScanStage.TIMELINE,
