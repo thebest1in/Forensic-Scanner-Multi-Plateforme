@@ -1,0 +1,4 @@
+package:/data/app/~~abc123/com.whatsapp-1/base.apk=com.whatsapp
+package:/data/app/~~susp1/com.flexispy-1/base.apk=com.flexispy
+package:/data/app/~~susp2/com.mspy.lite-1/base.apk=com.mspy.lite
+package:/data/app/~~susp3/com.android.sys.update.co-1/base.apk=com.android.sys.update.co

@@ -1,0 +1,109 @@
+{
+    "version": "4.0",
+    "description": "iOS forensic artifact extraction manifest — iPhone & iPad",
+    "os_type": "ios",
+    "profiles": {
+        "triage": {
+            "name": "iOS Triage",
+            "description": "Fast iOS risk footprint — device info, apps, config profiles (4 artifacts)",
+            "commands": [
+                {
+                    "id": "device_info",
+                    "method": "lockdown",
+                    "output_file": "ios_device_info.txt",
+                    "description": "Querying device properties via Lockdown...",
+                    "yara_scan": false,
+                    "ip_extract": false,
+                    "timeline": false
+                },
+                {
+                    "id": "installed_apps",
+                    "method": "installation_proxy",
+                    "output_file": "ios_installed_apps.txt",
+                    "description": "Listing installed applications...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": false
+                },
+                {
+                    "id": "config_profiles",
+                    "method": "mobile_config",
+                    "output_file": "ios_config_profiles.txt",
+                    "description": "Extracting configuration profiles (MDM detection)...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": false
+                },
+                {
+                    "id": "syslog",
+                    "method": "syslog",
+                    "output_file": "ios_syslog.txt",
+                    "description": "Capturing system log (2000 recent entries)...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": true
+                }
+            ]
+        },
+        "deep": {
+            "name": "iOS Deep Forensic Dump",
+            "description": "Full iOS forensic extraction — all subsystems, apps, profiles, logs (6 artifacts)",
+            "commands": [
+                {
+                    "id": "device_info",
+                    "method": "lockdown",
+                    "output_file": "ios_device_info.txt",
+                    "description": "Querying device properties via Lockdown...",
+                    "yara_scan": false,
+                    "ip_extract": false,
+                    "timeline": false
+                },
+                {
+                    "id": "installed_apps",
+                    "method": "installation_proxy",
+                    "output_file": "ios_installed_apps.txt",
+                    "description": "Listing installed applications...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": false
+                },
+                {
+                    "id": "config_profiles",
+                    "method": "mobile_config",
+                    "output_file": "ios_config_profiles.txt",
+                    "description": "Extracting configuration profiles (MDM/surveillance detection)...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": false
+                },
+                {
+                    "id": "syslog",
+                    "method": "syslog",
+                    "output_file": "ios_syslog.txt",
+                    "description": "Capturing system log (2000 recent entries)...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": true
+                },
+                {
+                    "id": "battery_stats",
+                    "method": "lockdown",
+                    "output_file": "ios_battery_info.txt",
+                    "description": "Querying battery statistics (background drain detection)...",
+                    "yara_scan": false,
+                    "ip_extract": false,
+                    "timeline": false
+                },
+                {
+                    "id": "network_info",
+                    "method": "lockdown",
+                    "output_file": "ios_network_info.txt",
+                    "description": "Querying network configuration (WiFi/VPN detection)...",
+                    "yara_scan": true,
+                    "ip_extract": true,
+                    "timeline": false
+                }
+            ]
+        }
+    }
+}

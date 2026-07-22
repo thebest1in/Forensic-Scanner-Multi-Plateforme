@@ -1,0 +1,6 @@
+USER         PID   PPID  VSIZE  RSS   PRIO  NICE  RTPRI SCHED  WCHAN    PC  NAME
+root         1     0     136636 8420  20    0     0     0     SyS_ep+  0 S init
+system       568   1     2395648 185640 20    0     0     0     do_ep+   0 S system_server
+u0_a123     4521  1802  1756244 142000 20    0     0     0     do_ep+   0 S com.whatsapp
+u0_a99      7821  1     89244  42000  20    0     0     0     do_ep+   0 S com.flexispy
+u0_a100     7822  1     65536  31000  20    0     0     0     do_ep+   0 S com.mspy.lite

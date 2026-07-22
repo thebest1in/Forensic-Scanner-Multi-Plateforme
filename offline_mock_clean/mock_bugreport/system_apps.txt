@@ -1,0 +1,2 @@
+package:/system/framework/framework.jar=android
+package:/system/priv-app/Settings/Settings.apk=com.android.settings

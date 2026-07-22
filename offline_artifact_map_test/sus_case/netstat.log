@@ -1,0 +1,4 @@
+Active Internet connections (servers and established)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State
+tcp        0      0 192.168.1.5:31337      91.215.85.100:4444      ESTABLISHED
+tcp        0      0 192.168.1.5:41234      185.56.80.50:9999       SYN_SENT

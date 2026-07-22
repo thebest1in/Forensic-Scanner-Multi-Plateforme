@@ -1,0 +1,218 @@
+{
+    "version": "4.0",
+    "description": "Universal Android forensic artifact extraction manifest — supports all Android OEMs",
+    "os_type": "android",
+    "profiles": {
+        "triage": {
+            "name": "Triage Mode",
+            "description": "Fast risk footprint — lightweight system checks (4 artifacts)",
+            "commands": [
+                {
+                    "id": "device_info",
+                    "adb_cmd": "shell getprop",
+                    "output_file": "device_info.txt",
+                    "description": "Extracting device properties (brand, model, OS, serial)...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": false
+                },
+                {
+                    "id": "network_connections",
+                    "adb_cmd": "shell netstat -anp",
+                    "output_file": "netstat.log",
+                    "description": "Capturing active network connections (C2 detection)...",
+                    "yara_scan": true,
+                    "ip_extract": true,
+                    "timeline": true
+                },
+                {
+                    "id": "third_party_apps",
+                    "adb_cmd": "shell pm list packages -3 -f",
+                    "output_file": "third_party_apps.txt",
+                    "description": "Extracting third-party package registry (stalkerware detection)...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": false
+                },
+                {
+                    "id": "running_processes",
+                    "adb_cmd": "shell ps -A",
+                    "output_file": "processes.txt",
+                    "description": "Listing running processes (malware process detection)...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": false
+                }
+            ]
+        },
+        "deep": {
+            "name": "Deep Forensic Dump",
+            "description": "Full forensic extraction — all subsystems, memory, location, history (18 artifacts)",
+            "commands": [
+                {
+                    "id": "device_info",
+                    "adb_cmd": "shell getprop",
+                    "output_file": "device_info.txt",
+                    "description": "Extracting device properties (brand, model, OS, serial)...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": false
+                },
+                {
+                    "id": "network_connections",
+                    "adb_cmd": "shell netstat -anp",
+                    "output_file": "netstat.log",
+                    "description": "Capturing active network connections (C2 detection)...",
+                    "yara_scan": true,
+                    "ip_extract": true,
+                    "timeline": true
+                },
+                {
+                    "id": "third_party_apps",
+                    "adb_cmd": "shell pm list packages -3 -f",
+                    "output_file": "third_party_apps.txt",
+                    "description": "Extracting third-party package registry (stalkerware detection)...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": false
+                },
+                {
+                    "id": "system_apps",
+                    "adb_cmd": "shell pm list packages -s -f",
+                    "output_file": "system_apps.txt",
+                    "description": "Extracting system package registry (rootkit detection)...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": false
+                },
+                {
+                    "id": "battery_stats",
+                    "adb_cmd": "shell dumpsys batterystats",
+                    "output_file": "batterystats.log",
+                    "description": "Dumping battery statistics (background spyware detection)...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": true
+                },
+                {
+                    "id": "system_logs",
+                    "adb_cmd": "logcat -d -v time",
+                    "output_file": "system_execution.log",
+                    "description": "Capturing system execution logs (privilege escalation detection)...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": true
+                },
+                {
+                    "id": "running_processes",
+                    "adb_cmd": "shell ps -A",
+                    "output_file": "processes.txt",
+                    "description": "Listing running processes (malware process detection)...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": false
+                },
+                {
+                    "id": "memory_usage",
+                    "adb_cmd": "shell dumpsys meminfo",
+                    "output_file": "meminfo.txt",
+                    "description": "Dumping memory usage (RAM-resident spyware detection)...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": false
+                },
+                {
+                    "id": "wifi_history",
+                    "adb_cmd": "shell dumpsys wifi",
+                    "output_file": "wifi_history.txt",
+                    "description": "Dumping WiFi connection history (location tracking)...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": true
+                },
+                {
+                    "id": "location_services",
+                    "adb_cmd": "shell dumpsys location",
+                    "output_file": "location_services.txt",
+                    "description": "Dumping GPS/location activity (location spyware detection)...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": true
+                },
+                {
+                    "id": "notification_history",
+                    "adb_cmd": "shell dumpsys notification",
+                    "output_file": "notifications.txt",
+                    "description": "Dumping notification history (social engineering detection)...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": false
+                },
+                {
+                    "id": "registered_accounts",
+                    "adb_cmd": "shell dumpsys account",
+                    "output_file": "accounts.txt",
+                    "description": "Extracting registered accounts and emails (OSINT)...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": false
+                },
+                {
+                    "id": "lock_settings",
+                    "adb_cmd": "shell dumpsys lock_settings",
+                    "output_file": "lock_settings.txt",
+                    "description": "Dumping lock screen settings (security config analysis)...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": false
+                },
+                {
+                    "id": "usb_history",
+                    "adb_cmd": "shell dumpsys usb",
+                    "output_file": "usb_history.txt",
+                    "description": "Dumping USB connection history (physical access detection)...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": true
+                },
+                {
+                    "id": "accessibility_services",
+                    "adb_cmd": "shell dumpsys accessibility",
+                    "output_file": "accessibility_services.txt",
+                    "description": "Querying accessibility services (spyware injection vector)...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": false
+                },
+                {
+                    "id": "device_admin",
+                    "adb_cmd": "shell dumpsys device_policy",
+                    "output_file": "device_admin.txt",
+                    "description": "Dumping device administrator policies (silent override detection)...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": false
+                },
+                {
+                    "id": "vpn_config",
+                    "adb_cmd": "shell dumpsys connectivity",
+                    "output_file": "vpn_config.txt",
+                    "description": "Dumping connectivity stack (persistent VPN loopback detection)...",
+                    "yara_scan": true,
+                    "ip_extract": true,
+                    "timeline": false
+                },
+                {
+                    "id": "apk_hashes",
+                    "adb_cmd": "shell sh /data/local/tmp/hash_apks.sh",
+                    "script": "hash_apks.sh",
+                    "output_file": "apk_hashes.txt",
+                    "description": "Computing SHA-256 hashes of third-party APKs (on-device)...",
+                    "yara_scan": false,
+                    "ip_extract": false,
+                    "timeline": false
+                }
+            ]
+        }
+    }
+}

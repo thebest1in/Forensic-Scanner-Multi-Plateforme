@@ -1,0 +1,5 @@
+# Install after the production environment is available. This file is kept
+# separate because some forensic tools use non-PyPI installation channels.
+pytest>=8.0
+ruff>=0.8
+mypy>=1.13

@@ -1,0 +1,2 @@
+package:/data/app/~~abc123/com.whatsapp-1/base.apk=com.whatsapp
+package:/data/app/~~def456/com.instagram.android-1/base.apk=com.instagram.android

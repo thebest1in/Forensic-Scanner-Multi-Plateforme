@@ -1,0 +1,145 @@
+{
+    "version": "4.0",
+    "description": "Linux server & Docker container forensic artifact extraction manifest",
+    "os_type": "linux",
+    "profiles": {
+        "triage": {
+            "name": "Linux Triage",
+            "description": "Fast Linux risk footprint — system info, processes, connections (4 artifacts)",
+            "commands": [
+                {
+                    "id": "system_info",
+                    "linux_cmd": "uname -a && cat /etc/os-release 2>/dev/null && hostname",
+                    "output_file": "linux_system_info.txt",
+                    "description": "Querying system info (kernel, OS, hostname)...",
+                    "yara_scan": false,
+                    "ip_extract": false,
+                    "timeline": false
+                },
+                {
+                    "id": "running_processes",
+                    "linux_cmd": "ps auxf",
+                    "output_file": "linux_processes.txt",
+                    "description": "Listing running processes (malware detection)...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": false
+                },
+                {
+                    "id": "network_connections",
+                    "linux_cmd": "ss -tulnp 2>/dev/null || netstat -tulnp 2>/dev/null",
+                    "output_file": "linux_network.txt",
+                    "description": "Capturing network connections (C2 detection)...",
+                    "yara_scan": true,
+                    "ip_extract": true,
+                    "timeline": false
+                },
+                {
+                    "id": "installed_packages",
+                    "linux_cmd": "dpkg -l 2>/dev/null || rpm -qa 2>/dev/null || apk list --installed 2>/dev/null || echo 'no_pkg_manager'",
+                    "output_file": "linux_packages.txt",
+                    "description": "Listing installed packages (rootkit detection)...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": false
+                }
+            ]
+        },
+        "deep": {
+            "name": "Linux Deep Forensic Dump",
+            "description": "Full Linux forensic extraction — all subsystems, logs, crontabs, services (10 artifacts)",
+            "commands": [
+                {
+                    "id": "system_info",
+                    "linux_cmd": "uname -a && cat /etc/os-release 2>/dev/null && hostname && uptime",
+                    "output_file": "linux_system_info.txt",
+                    "description": "Querying system info (kernel, OS, hostname, uptime)...",
+                    "yara_scan": false,
+                    "ip_extract": false,
+                    "timeline": false
+                },
+                {
+                    "id": "running_processes",
+                    "linux_cmd": "ps auxf",
+                    "output_file": "linux_processes.txt",
+                    "description": "Listing running processes (full tree)...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": false
+                },
+                {
+                    "id": "network_connections",
+                    "linux_cmd": "ss -tulnp 2>/dev/null || netstat -tulnp 2>/dev/null",
+                    "output_file": "linux_network.txt",
+                    "description": "Capturing network connections and listening ports...",
+                    "yara_scan": true,
+                    "ip_extract": true,
+                    "timeline": false
+                },
+                {
+                    "id": "installed_packages",
+                    "linux_cmd": "dpkg -l 2>/dev/null || rpm -qa 2>/dev/null || apk list --installed 2>/dev/null || echo 'no_pkg_manager'",
+                    "output_file": "linux_packages.txt",
+                    "description": "Listing installed packages...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": false
+                },
+                {
+                    "id": "system_logs",
+                    "linux_cmd": "journalctl -n 500 --no-pager 2>/dev/null || tail -500 /var/log/syslog 2>/dev/null || tail -500 /var/log/messages 2>/dev/null || echo 'no_logs_found'",
+                    "output_file": "linux_logs.txt",
+                    "description": "Capturing recent system logs (500 entries)...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": true
+                },
+                {
+                    "id": "crontabs",
+                    "linux_cmd": "crontab -l 2>/dev/null; for u in $(cut -f1 -d: /etc/passwd); do echo \"--- $u ---\"; crontab -u $u -l 2>/dev/null; done",
+                    "output_file": "linux_crontabs.txt",
+                    "description": "Listing all crontabs (persistence detection)...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": false
+                },
+                {
+                    "id": "systemd_services",
+                    "linux_cmd": "systemctl list-units --type=service --all 2>/dev/null || echo 'no_systemd'",
+                    "output_file": "linux_services.txt",
+                    "description": "Listing systemd services (backdoor detection)...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": false
+                },
+                {
+                    "id": "authorized_keys",
+                    "linux_cmd": "cat /root/.ssh/authorized_keys 2>/dev/null; for h in /home/*; do cat $h/.ssh/authorized_keys 2>/dev/null; done",
+                    "output_file": "linux_authorized_keys.txt",
+                    "description": "Extracting SSH authorized keys (lateral movement detection)...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": false
+                },
+                {
+                    "id": "suspicious_files",
+                    "linux_cmd": "find /tmp /var/tmp /dev/shm -type f -perm -111 2>/dev/null | head -50; find /usr/local/bin /usr/bin -newer /etc/passwd -type f 2>/dev/null | head -50",
+                    "output_file": "linux_suspicious_files.txt",
+                    "description": "Scanning for suspicious executable files (rootkit detection)...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": false
+                },
+                {
+                    "id": "docker_info",
+                    "linux_cmd": "docker ps -a 2>/dev/null && docker images 2>/dev/null || echo 'docker_not_available'",
+                    "output_file": "linux_docker_info.txt",
+                    "description": "Listing Docker containers and images (container escape detection)...",
+                    "yara_scan": true,
+                    "ip_extract": false,
+                    "timeline": false
+                }
+            ]
+        }
+    }
+}

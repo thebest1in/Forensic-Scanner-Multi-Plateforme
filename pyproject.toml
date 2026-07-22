@@ -1,0 +1,26 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+exclude = [
+    "venv",
+    "Forensic-Scanner-Multi-Plateforme",
+    "offline_SCAN_*",
+    "offline_scan_*",
+    "dump_forensic_*",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+exclude = "^(venv|Forensic-Scanner-Multi-Plateforme|offline_SCAN_|offline_scan_|dump_forensic_)"
+
+[[tool.mypy.overrides]]
+module = ["customtkinter", "yara", "pyzipper"]
+ignore_missing_imports = true
