@@ -1,5 +1,10 @@
 # Universal Forensic Scanner
 
+![Version](https://img.shields.io/badge/version-7.1.0-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)
+![Python](https://img.shields.io/badge/python-3.9+-yellow)
+
 **Version** : 7.1.0  
 **Date** : 2026-07-24  
 **Statut** : Release Candidate 4 (iOS Support Added)
@@ -12,17 +17,43 @@ chaîne de preuve intégrée.
 
 ## Fonctionnalités
 
-- **5 modes d'analyse** : Android Live (ADB), Android Offline, iOS Live (libimobiledevice), iOS Offline, Exit
-- **14 phases d'analyse** : YARA, IOC, MVT, ALEAPP, Capa, APKiD, Quark, OTX, Entropie, Browser, Corrélation, Accessibility, APK Hash, Device Admin, Install Timeline
-- **18 règles YARA** : Pegasus, NoviSpy, FinSpy, Dendroid, SandroRAT, HackingTeam
-- **25 000+ IPs malveillantes** : Synchronisation automatique
-- **Score composite 0-100** : YARA + Heuristiques + Outils + Intel + Entropie
-- **iOS support** : Backup extraction, Manifest.db parsing, 12 iOS-specific parsers
-- **Multi-plateforme** : Android, iOS, Windows/Linux/macOS
-- **GUI + CLI** : Interface graphique CustomTkinter + ligne de commande
-- **Chaîne de preuve** : HMAC-SHA256, SHA-256 chain, packages d'évidence
-- **Remédiation** : Actions DELETE/UPDATE/RESTRICT
-- **Containment** : DNS sinkhole, isolation apps, evidence lock
+### Modes d'analyse
+
+- **Android Live (ADB)** — Analyse en temps réel via USB
+- **Android Offline** — Analyse de dumps/archives existants
+- **iOS Live (libimobiledevice)** — Extraction backup via USB
+- **iOS Offline** — Analyse de backups iOS existants
+
+### Modules d'analyse (14 phases)
+
+| Phase | Description |
+|-------|-------------|
+| YARA | Détection signatures malware (18 règles) |
+| IOC | Indicateurs de compromission |
+| MVT | Mobile Verification Toolkit |
+| ALEAPP | Android Logs Events And Logs Parser |
+| Capa | Détection capacités malware |
+| APKiD | Identification protections APK |
+| Quark | Détection malware Android |
+| OTX | AlienVault Open Threat Exchange |
+| Entropie | Détection chiffrement/obfuscation |
+| Browser | Analyse historique navigation |
+| Corrélation | Corrélation multi-sources |
+| Accessibility | Permissions accessibilité suspectes |
+| APK Hash | Comparaison hashes connus |
+| Device Admin | Administrateurs de périphériques |
+| Install Timeline | Chronologie installations |
+
+### Artifacts iOS (12 parsers)
+
+- SMS/iMessage
+- Appels
+- Contacts
+- Safari/WiFi
+- Analytics
+- Profils
+- Domains applicatifs
+- Et plus...
 
 ## Installation
 
@@ -73,6 +104,36 @@ UniversalForensicScanner_CLI.exe
 ```
 
 Voir `docs/GUIDE_UTILISATEUR.md` pour les détails complets.
+
+## Architecture
+
+```
+security-phone/
+├── cli.py                  # Interface ligne de commande
+├── app.py                  # Interface graphique (CustomTkinter)
+├── analyzer.py             # Moteur d'analyse principal
+├── extractor.py            # Extraction artifacts
+├── timeline.py             # Chronologie forensique
+├── yara_context.py         # Scanner YARA
+├── osint_bridge.py         # Intégration OSINT
+├── ios/                    # Acquisition iOS
+│   ├── acquisition.py      # IOSAcquirer
+│   ├── backup.py           # Manifest.db parser
+│   ├── parsers/            # 12 parsers iOS
+│   └── ...
+├── forensic_modules/       # Modules forensiques
+│   ├── accessibility_analysis.py
+│   ├── apk_hash_analysis.py
+│   ├── mitre_mapping.py
+│   └── ...
+├── manifests/              # Artefacts à extraire
+│   ├── android_artifacts.json
+│   └── ios_artifacts.json
+├── rules/                  # Règles YARA + IOCs
+│   ├── scans.db
+│   └── known_apk_hashes.json
+└── libimobiledevice/       # Binaires Windows (exclus du repo)
+```
 
 ## Documentation
 
