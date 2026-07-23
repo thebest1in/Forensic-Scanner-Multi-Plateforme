@@ -1,0 +1,146 @@
+{
+    "accessibility_abuse": {
+        "technique": "T1417",
+        "tactic": "collection",
+        "name": "Input Capture",
+        "description": "Accessibility service used for screen monitoring and input capture"
+    },
+    "device_admin_abuse": {
+        "technique": "T1548",
+        "tactic": "privilege-escalation",
+        "name": "Abuse Elevation Control Mechanism",
+        "description": "Non-system device administrator detected"
+    },
+    "hooking_framework": {
+        "technique": "T1620",
+        "tactic": "defense-evasion",
+        "name": "Reflective Code Loading",
+        "description": "Dynamic instrumentation framework detected"
+    },
+    "root_tool": {
+        "technique": "T1574",
+        "tactic": "persistence",
+        "name": "Hijack Execution Flow",
+        "description": "Root solution detected enabling persistent access"
+    },
+    "known_spyware": {
+        "technique": "T1418",
+        "tactic": "discovery",
+        "name": "Software Discovery",
+        "description": "Commercial spyware package detected"
+    },
+    "memory_injection": {
+        "technique": "T1055",
+        "tactic": "defense-evasion",
+        "name": "Process Injection",
+        "description": "Hooking framework injection detected in process memory"
+    },
+    "vpn_proxy": {
+        "technique": "T1090",
+        "tactic": "command-and-control",
+        "name": "Proxy",
+        "description": "VPN or proxy configuration for traffic interception"
+    },
+    "http_proxy": {
+        "technique": "T1090.001",
+        "tactic": "command-and-control",
+        "name": "Internal Proxy",
+        "description": "HTTP proxy configured for traffic redirection"
+    },
+    "socks_proxy": {
+        "technique": "T1090.003",
+        "tactic": "command-and-control",
+        "name": "Multi-hop Proxy",
+        "description": "SOCKS proxy configured for traffic tunneling"
+    },
+    "suspicious_port": {
+        "technique": "T1571",
+        "tactic": "command-and-control",
+        "name": "Non-Standard Port",
+        "description": "Service listening on suspicious port"
+    },
+    "signature_failure": {
+        "technique": "T1553",
+        "tactic": "defense-evasion",
+        "name": "Subvert Trust Controls",
+        "description": "APK signature verification failed"
+    },
+    "unsigned_apk": {
+        "technique": "T1553.002",
+        "tactic": "defense-evasion",
+        "name": "Code Signing",
+        "description": "Unsigned APK detected"
+    },
+    "partition_tampering": {
+        "technique": "T1601",
+        "tactic": "defense-evasion",
+        "name": "Modify System Image",
+        "description": "Partition integrity verification failed"
+    },
+    "root_detection": {
+        "technique": "T1574.001",
+        "tactic": "defense-evasion",
+        "name": "DLL Search Order Hijacking",
+        "description": "Device in debuggable or engineering mode"
+    },
+    "system_integrity": {
+        "technique": "T1553",
+        "tactic": "defense-evasion",
+        "name": "Subvert Trust Controls",
+        "description": "System security property violation detected"
+    },
+    "known_malicious_apk": {
+        "technique": "T1587",
+        "tactic": "resource-development",
+        "name": "Develop Capabilities",
+        "description": "Known malicious APK hash detected"
+    },
+    "dangerous_combo": {
+        "technique": "T1418",
+        "tactic": "discovery",
+        "name": "Software Discovery",
+        "description": "Dangerous permission combination indicating spyware"
+    },
+    "excessive_permissions": {
+        "technique": "T1516",
+        "tactic": "defense-evasion",
+        "name": "Input Injection",
+        "description": "Package holds excessive critical permissions"
+    },
+    "custom_dns": {
+        "technique": "T1557",
+        "tactic": "credential-access",
+        "name": "Adversary-in-the-Middle",
+        "description": "Custom DNS server configured — potential DNS hijacking"
+    },
+    "play_protect_disabled": {
+        "technique": "T1562",
+        "tactic": "defense-evasion",
+        "name": "Impair Defenses",
+        "description": "Play Protect or package verification disabled"
+    },
+    "suspicious_notification": {
+        "technique": "T1517",
+        "tactic": "collection",
+        "name": "Access Notifications",
+        "description": "Notification with suspicious social engineering content"
+    },
+    "phishing_notification": {
+        "technique": "T1566",
+        "tactic": "initial-access",
+        "name": "Phishing",
+        "description": "Notification impersonating a legitimate service"
+    },
+    "policy_restriction": {
+        "technique": "T1562",
+        "tactic": "defense-evasion",
+        "name": "Impair Defenses",
+        "description": "Device admin policy disabling security features"
+    },
+    "suspicuous_install_path": {
+        "technique": "T1588",
+        "tactic": "resource-development",
+        "name": "Obtain Capabilities",
+        "description": "Package installed from non-standard path"
+    }
+}

@@ -19,13 +19,27 @@ except ImportError:
 
 from core import KNOWN_IPS_FILE, YARA_RULES_FILE, logger
 from forensic_modules.account_analysis import check_accounts
+from forensic_modules.accessibility_analysis import check_accessibility_services
+from forensic_modules.apk_hash_analysis import check_apk_hashes
+from forensic_modules.device_admin_analysis import check_device_admin
+from forensic_modules.install_timeline import check_install_timeline
+from forensic_modules.mitre_mapping import map_findings_to_attack
 from forensic_modules.network_forensics import check_dns_configuration, check_network_connections
+from forensic_modules.notification_analysis import check_notifications
 from forensic_modules.partition_verification import check_partition_integrity
+from forensic_modules.permission_correlation import check_permission_combinations
+from forensic_modules.play_protect_analysis import check_play_protect
 from forensic_modules.proxy_vpn_detection import check_proxy_config
 from forensic_modules.signature_verification import check_apk_signatures
 from forensic_modules.system_integrity import check_system_properties
 from yara_context import classify_yara_match, representative_evidence
 from yara_diagnostics import collect_match_evidence
+
+try:
+    from ios.acquisition import ArtifactResult, ArtifactStatus
+    IOS_AVAILABLE = True
+except ImportError:
+    IOS_AVAILABLE = False
 
 try:
     from heuristics import analyze_permissions
@@ -169,6 +183,7 @@ def filter_noise(content: str) -> str:
 
 class ThreatVerdict:
     CLEAN = "CLEAN"
+    LOW_RISK = "LOW_RISK"
     SUSPICIOUS = "SUSPICIOUS"
     CRITICAL = "CRITICAL"
 
@@ -207,6 +222,7 @@ class AnalysisResult:
         self.tool_status: dict[str, str] = {}  # {phase: "ok"|"error"|"skipped"|"disabled"}
         self._extracted_files: dict[str, Path] | None = None
         self.forensic_findings: list[dict] = []
+        self.mitre_mappings: list[dict] = []
 
     def to_dict(self) -> dict:
         from version import APP_NAME, REPORT_SCHEMA_VERSION, VERSION
@@ -244,6 +260,7 @@ class AnalysisResult:
             "tool_status": self.tool_status,
             "summary": self.summary,
             "forensic_findings": self.forensic_findings,
+            "mitre_attack_mappings": self.mitre_mappings,
         }
         return d
 
@@ -289,6 +306,26 @@ def _load_known_ips() -> set[str]:
             known.add(line)
     logger.info(f"Loaded {len(known)} known malicious IPs")
     return known
+
+
+def is_yara_eligible(artifact) -> bool:
+    """Check if an iOS artifact is eligible for YARA scanning.
+
+    For ArtifactResult objects (iOS pipeline):
+      - Must be SUCCESS status
+      - Must have a file path
+      - File must exist and be non-empty
+      - Must not be a diagnostic or parser source type
+    """
+    if IOS_AVAILABLE and isinstance(artifact, ArtifactResult):
+        return (
+            artifact.status == ArtifactStatus.SUCCESS
+            and artifact.path is not None
+            and artifact.path.is_file()
+            and artifact.path.stat().st_size > 0
+            and artifact.source_type not in ("diagnostic", "parser")
+        )
+    return False
 
 
 def _compile_yara_rules():
@@ -397,12 +434,37 @@ def analyze(
     known_ips = _load_known_ips()
     yara_rules = _compile_yara_rules()
 
+    # Detect failed extractions by checking file content prefix
+    FAILED_PREFIX = "[EXTRACTION FAILED]"
+
     YARA_SKIP_PREFIXES = ("temp_anr_", "anr_2026")
     YARA_SKIP_SUFFIXES = (".db", ".bin", ".dat", ".gz", ".img", ".so", ".apk", ".zip")
     YARA_SKIP_NAMES = {"dumpstate_board.txt", "cameraopt.txt", "failkeeper.db",
                         "HangChart.txt", "LocalHangRecord.txt",
                         "LocalSubSystemRestartRecord.txt", "LocalVMRebootRecord.txt",
                         "RebootChart.txt", "SubSystemChart.txt"}
+
+    # Minimum file size to scan — tiny files are diagnostic/placeholder, not forensic data
+    YARA_MIN_SIZE = 256  # bytes
+
+    def _is_failed_or_diagnostic(fp: Path) -> bool:
+        """Check if file is a failed extraction or too small for forensic value."""
+        try:
+            size = fp.stat().st_size
+        except OSError:
+            return True
+        # Skip tiny files (diagnostic placeholders)
+        if size < YARA_MIN_SIZE:
+            return True
+        # Check first line for failure marker
+        try:
+            with fp.open(encoding="utf-8", errors="replace") as f:
+                first_line = f.readline(200)
+                if first_line.startswith(FAILED_PREFIX):
+                    return True
+        except Exception:
+            return True
+        return False
 
     def _should_skip_yara(fp: Path) -> bool:
         if fp.name in YARA_SKIP_NAMES:
@@ -414,10 +476,25 @@ def analyze(
         return False
 
     all_files = list(extracted_files.values())
-    files_to_scan = [f for f in all_files if not _should_skip_yara(f)]
+    files_to_scan = []
+    skipped_failed = 0
+    skipped_config = 0
+    for f in all_files:
+        if _should_skip_yara(f):
+            skipped_config += 1
+            continue
+        if _is_failed_or_diagnostic(f):
+            skipped_failed += 1
+            continue
+        files_to_scan.append(f)
+
     skipped_count = len(all_files) - len(files_to_scan)
     if skipped_count:
-        logger.info(f"YARA: {skipped_count} junk/binary files skipped, {len(files_to_scan)} to scan")
+        logger.info(
+            f"YARA: {skipped_count} files skipped "
+            f"({skipped_failed} failed/diagnostic, {skipped_config} config/binary), "
+            f"{len(files_to_scan)} to scan"
+        )
     result.scanned_files = len(files_to_scan)
     total_steps = max(len(files_to_scan), 1)
 
@@ -539,6 +616,22 @@ def analyze(
         _report(on_progress, 88, "Computing scan delta...")
         try:
             init_db()
+            pkg_count = 0
+            proc_count = 0
+            pkg_file = extracted_files.get("third_party_apps")
+            if pkg_file and pkg_file.exists():
+                try:
+                    content = pkg_file.read_text(encoding="utf-8", errors="replace")
+                    pkg_count = len([l for l in content.splitlines() if l.strip().startswith("package:")])
+                except Exception:
+                    pass
+            proc_file = extracted_files.get("running_processes") or extracted_files.get("processes")
+            if proc_file and proc_file.exists():
+                try:
+                    content = proc_file.read_text(encoding="utf-8", errors="replace")
+                    proc_count = len([l for l in content.splitlines() if l.strip() and not l.startswith("USER")])
+                except Exception:
+                    pass
             scan_record = build_scan_record(
                 device_serial=device_serial,
                 verdict="PENDING",
@@ -546,6 +639,8 @@ def analyze(
                 yara_matches=result.matched_rules,
                 suspicious_ips=result.suspicious_ips,
                 risk_score=result.heuristic_result.get("risk_score", 0) if result.heuristic_result else 0,
+                package_count=pkg_count,
+                process_count=proc_count,
             )
             delta = compute_delta(scan_record, device_serial)
             result.history_delta = delta
@@ -1063,88 +1158,22 @@ def _compute_composite_risk(result: AnalysisResult) -> tuple[int, str]:
 def _compute_verdict(result: AnalysisResult) -> str:
     """Compute the authoritative threat verdict.
 
-    The composite risk score is the single source of truth. The verdict
-    starts from the composite risk level and only escalates upward based
-    on high-confidence individual signals (never downgrades).
+    The composite risk score is the SINGLE source of truth.
+    Verdict is derived ONLY from the score — no independent escalation.
+    This prevents contradictions like score=41 (SUSPICIOUS) but verdict=CRITICAL.
     """
-    critical_rules = {"pegasus", "zero_click", "root_exploit", "reverse_shell",
-                       "novispy", "finspy", "hackingteam", "sandrorat", "dendroid",
-                       "stalkerware", "disguised_package", "spyware",
-                       "credential_theft", "data_exfil"}
-
-    # --- Baseline from composite risk level ---
-    composite = getattr(result, "composite_risk_level", "CLEAN")
-    if composite == "CRITICAL":
+    score = result.composite_risk_score
+    if score >= 80:
         return ThreatVerdict.CRITICAL
-    elif composite == "SUSPICIOUS":
-        verdict = ThreatVerdict.SUSPICIOUS
+    elif score >= 60:
+        return ThreatVerdict.CRITICAL
+    elif score >= 40:
+        return ThreatVerdict.SUSPICIOUS
+    elif score >= 20:
+        return ThreatVerdict.LOW_RISK
     else:
-        verdict = ThreatVerdict.CLEAN
+        return ThreatVerdict.CLEAN
 
-    # --- Escalation: high-confidence YARA rules always override ---
-    for rule_info in result.matched_rules:
-        if not rule_info.get("authoritative", True):
-            continue
-        tags = {t.lower() for t in rule_info.get("tags", [])}
-        name = rule_info.get("rule", "").lower()
-        if tags & critical_rules or any(cr in name for cr in critical_rules):
-            return ThreatVerdict.CRITICAL
-
-    # --- Escalation: critical heuristic risk ---
-    if result.heuristic_result:
-        if result.heuristic_result.get("risk_level") == "CRITICAL":
-            return ThreatVerdict.CRITICAL
-
-    # --- Escalation: PCAP C2 hits ---
-    if result.pcap_results and result.pcap_results.get("c2_hits"):
-        return ThreatVerdict.CRITICAL
-
-    # --- Escalation: MVT critical indicators ---
-    for mvt in result.mvt_results:
-        if mvt.get("threat_level") in ("critical", "high"):
-            return ThreatVerdict.CRITICAL
-
-    # --- Escalation: capa critical capabilities ---
-    for capa in result.capa_results:
-        mal_caps = capa.get("malicious_capabilities", [])
-        if any(c.get("severity") == "critical" for c in mal_caps):
-            return ThreatVerdict.CRITICAL
-
-    # --- Escalation: ALEAPP stalkerware ---
-    for aleapp in result.aleapp_results:
-        for finding in aleapp.get("findings", []):
-            if finding.get("severity") == "CRITICAL":
-                return ThreatVerdict.CRITICAL
-        if aleapp.get("stalkerware_found"):
-            return ThreatVerdict.CRITICAL
-
-    # --- Escalation: APKiD critical ---
-    for apkid in result.apkid_results:
-        if apkid.get("threat_level") == "CRITICAL":
-            return ThreatVerdict.CRITICAL
-
-    # --- Escalation: Quark critical ---
-    for quark in result.quark_results:
-        if quark.get("threat_level") == "CRITICAL":
-            return ThreatVerdict.CRITICAL
-
-    # --- Escalation: OTX/intel C2 ---
-    for intel in result.intel_results:
-        if intel.get("c2_match"):
-            return ThreatVerdict.CRITICAL
-
-    # --- Escalation: entropy dual risk ---
-    for ent in result.entropy_results:
-        if ent.get("exfil_risk") and ent.get("obfuscation_risk"):
-            return ThreatVerdict.CRITICAL
-
-    # --- Escalation: correlation critical ---
-    corr = result.correlation_result or {}
-    if corr.get("critical_count", 0) >= 2:
-        return ThreatVerdict.CRITICAL
-
-    # If no escalation triggered, return the composite-derived baseline
-    return verdict
 
 
 def _explain_verdict(result: AnalysisResult) -> list[str]:
@@ -1402,7 +1431,8 @@ def _build_summary(result: AnalysisResult) -> str:
             if oi.get("lookup_urls"):
                 for _category, urls in oi["lookup_urls"].items():
                     for u in urls[:2]:
-                        lines.append(f"    -> {u['name']}: {u['url'][:80]}")
+                        url = u.get("url_template", u.get("url", ""))
+                        lines.append(f"    -> {u['name']}: {url[:80]}")
 
     corr = result.correlation_result or {}
     if corr.get("total_correlations", 0) > 0:
@@ -1648,6 +1678,100 @@ def _process_forensic_artifacts(result: AnalysisResult, extracted_files: dict[st
                 logger.warning(f"Forensic finding: {f['type']} — {f['evidence'][:80]}")
         except Exception as e:
             logger.warning(f"Failed to process proxy config: {e}")
+
+    # Accessibility analysis (#1)
+    acc_file = extracted_files.get("accessibility_services")
+    if acc_file and acc_file.exists():
+        try:
+            content = acc_file.read_text(encoding="utf-8", errors="replace")
+            findings = check_accessibility_services(content, acc_file.name)
+            forensic_findings.extend(findings)
+            for f in findings:
+                logger.warning(f"Forensic finding: {f['type']} — {f['evidence'][:80]}")
+        except Exception as e:
+            logger.warning(f"Failed to process accessibility services: {e}")
+
+    # Device admin analysis (#2)
+    da_file = extracted_files.get("device_admin")
+    if da_file and da_file.exists():
+        try:
+            content = da_file.read_text(encoding="utf-8", errors="replace")
+            findings = check_device_admin(content, da_file.name)
+            forensic_findings.extend(findings)
+            for f in findings:
+                logger.warning(f"Forensic finding: {f['type']} — {f['evidence'][:80]}")
+        except Exception as e:
+            logger.warning(f"Failed to process device admin: {e}")
+
+    # Install timeline (#3)
+    install_file = extracted_files.get("install_history")
+    if install_file and install_file.exists():
+        try:
+            content = install_file.read_text(encoding="utf-8", errors="replace")
+            findings = check_install_timeline(content, install_file.name)
+            forensic_findings.extend(findings)
+            for f in findings:
+                logger.warning(f"Forensic finding: {f['type']} — {f['evidence'][:80]}")
+        except Exception as e:
+            logger.warning(f"Failed to process install timeline: {e}")
+
+    # APK hash check (#4)
+    apk_hash_file = extracted_files.get("apk_hashes")
+    if apk_hash_file and apk_hash_file.exists():
+        try:
+            content = apk_hash_file.read_text(encoding="utf-8", errors="replace")
+            findings = check_apk_hashes(content, apk_hash_file.name)
+            forensic_findings.extend(findings)
+            for f in findings:
+                logger.warning(f"Forensic finding: {f['type']} — {f['evidence'][:80]}")
+        except Exception as e:
+            logger.warning(f"Failed to process APK hash check: {e}")
+
+    # Permission correlation (#5)
+    perm_file = extracted_files.get("package_permissions")
+    if perm_file and perm_file.exists():
+        try:
+            content = perm_file.read_text(encoding="utf-8", errors="replace")
+            findings = check_permission_combinations(content, perm_file.name)
+            forensic_findings.extend(findings)
+            for f in findings:
+                logger.warning(f"Forensic finding: {f['type']} — {f['evidence'][:80]}")
+        except Exception as e:
+            logger.warning(f"Failed to process permission analysis: {e}")
+
+    # Play Protect (#6)
+    pp_file = extracted_files.get("play_protect_status")
+    if pp_file and pp_file.exists():
+        try:
+            content = pp_file.read_text(encoding="utf-8", errors="replace")
+            findings = check_play_protect(content, pp_file.name)
+            forensic_findings.extend(findings)
+            for f in findings:
+                logger.warning(f"Forensic finding: {f['type']} — {f['evidence'][:80]}")
+        except Exception as e:
+            logger.warning(f"Failed to process Play Protect: {e}")
+
+    # Notifications (#7)
+    notif_file = extracted_files.get("notification_history")
+    if notif_file and notif_file.exists():
+        try:
+            content = notif_file.read_text(encoding="utf-8", errors="replace")
+            findings = check_notifications(content, notif_file.name)
+            forensic_findings.extend(findings)
+            for f in findings:
+                logger.warning(f"Forensic finding: {f['type']} — {f['evidence'][:80]}")
+        except Exception as e:
+            logger.warning(f"Failed to process notifications: {e}")
+
+    # MITRE ATT&CK mapping (#10)
+    mitre_mappings = map_findings_to_attack(
+        forensic_findings=forensic_findings,
+        matched_rules=result.matched_rules,
+        heuristic_result=result.heuristic_result,
+    )
+    if mitre_mappings:
+        result.mitre_mappings = mitre_mappings
+        logger.info(f"MITRE ATT&CK: {len(mitre_mappings)} technique mappings")
 
     # Store forensic findings in result
     if forensic_findings:

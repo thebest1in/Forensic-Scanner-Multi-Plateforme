@@ -229,7 +229,7 @@
                 },
                 {
                     "id": "device_identification",
-                    "adb_cmd": "shell getprop ro.product.model && adb shell getprop ro.build.version.release && adb shell getprop ro.build.display.id && adb shell getprop ro.serialno",
+                    "adb_cmd": "shell getprop ro.product.model; shell getprop ro.build.version.release; shell getprop ro.build.display.id; shell getprop ro.serialno",
                     "output_file": "device_identification.txt",
                     "description": "Device identification (model, Android version, build ID, serial)...",
                     "yara_scan": false,
@@ -238,7 +238,7 @@
                 },
                 {
                     "id": "root_detection",
-                    "adb_cmd": "shell getprop ro.debuggable && adb shell getprop ro.secure && adb shell getprop ro.build.type && adb shell getprop ro.adb.secure && adb shell getprop ro.boot.secureboot && adb shell getprop ro.secureboot.lockstate && adb shell getprop ro.secureboot.devicelock && adb shell which su && adb shell ls /system/bin/su && adb shell ls /system/xbin/su && adb shell ls /sbin/su",
+                    "adb_cmd": "shell getprop ro.debuggable; shell getprop ro.secure; shell getprop ro.build.type; shell getprop ro.adb.secure; shell getprop ro.boot.secureboot; shell getprop ro.secureboot.lockstate; shell which su 2>/dev/null; shell ls /system/bin/su /system/xbin/su /sbin/su 2>/dev/null",
                     "output_file": "root_detection.txt",
                     "description": "Root/jailbreak detection (debuggable, secure, su binary)...",
                     "yara_scan": false,
@@ -265,10 +265,10 @@
                 },
                 {
                     "id": "known_spyware_scan",
-                    "adb_cmd": "shell pm list packages | grep -E 'com.flexispy|com.spyera|com.mspy|com.highster|com.thetruthspy|com.springsolutions|com.androidstudioprojects|com.widdit|com.luxferre|com.surqs|com.fouadware|com.hawk.android|com.venum|com.phonesheriff|com.retina.je|com.pretulian.spyphone|com.childparental|com.bkphone|com.willdev|com.android.systemapp'",
+                    "adb_cmd": "shell pm list packages -3 -f",
                     "output_file": "known_spyware_scan.txt",
                     "description": "Scanning for known spyware packages (Pegasus, FlexiSpy, mSpy)...",
-                    "yara_scan": true,
+                    "yara_scan": false,
                     "ip_extract": false,
                     "timeline": false
                 },
@@ -319,7 +319,7 @@
                 },
                 {
                     "id": "established_connections",
-                    "adb_cmd": "shell netstat -an | grep ESTABLISHED",
+                    "adb_cmd": "shell netstat -anp",
                     "output_file": "established_connections.txt",
                     "description": "Capturing established TCP connections (C2 communication detection)...",
                     "yara_scan": true,
@@ -328,11 +328,11 @@
                 },
                 {
                     "id": "dns_configuration",
-                    "adb_cmd": "shell getprop net.dns1 && adb shell getprop net.dns2 && adb shell getprop net.dns3",
+                    "adb_cmd": "shell getprop net.dns1; shell getprop net.dns2; shell getprop net.dns3",
                     "output_file": "dns_configuration.txt",
                     "description": "Extracting DNS configuration (DNS hijacking detection)...",
                     "yara_scan": false,
-                    "ip_extract": true,
+                    "ip_extract": false,
                     "timeline": false
                 },
                 {
@@ -373,7 +373,7 @@
                 },
                 {
                     "id": "system_binaries",
-                    "adb_cmd": "shell ls /system/bin/ && adb shell ls /system/xbin/ && adb shell ls /sbin/",
+                    "adb_cmd": "shell ls /system/bin/ /system/xbin/ /sbin/ 2>/dev/null",
                     "output_file": "system_binaries.txt",
                     "description": "Listing system binaries (rootkit detection)...",
                     "yara_scan": true,
@@ -382,7 +382,7 @@
                 },
                 {
                     "id": "system_properties",
-                    "adb_cmd": "shell getprop ro.debuggable && adb shell getprop ro.secure && adb shell getprop ro.build.type && adb shell getprop ro.adb.secure && adb shell getprop ro.boot.secureboot && adb shell getprop ro.secureboot.lockstate && adb shell getprop ro.secureboot.devicelock && adb shell getprop odsign.verification.success && adb shell getprop sys.init.perf_lsm_hooks",
+                    "adb_cmd": "shell getprop ro.debuggable; shell getprop ro.secure; shell getprop ro.build.type; shell getprop ro.adb.secure; shell getprop ro.boot.secureboot; shell getprop ro.secureboot.lockstate; shell getprop odsign.verification.success; shell getprop sys.init.perf_lsm_hooks",
                     "output_file": "system_properties.txt",
                     "description": "Extracting critical system properties (security state)...",
                     "yara_scan": false,
@@ -391,7 +391,7 @@
                 },
                 {
                     "id": "partition_integrity",
-                    "adb_cmd": "shell getprop partition.system.verified.root_digest && adb shell getprop partition.vendor.verified.root_digest && adb shell getprop partition.product.verified.root_digest && adb shell getprop partition.odm.verified.root_digest && adb shell getprop partition.system_ext.verified.root_digest && adb shell getprop partition.vendor_dlkm.verified.root_digest && adb shell getprop partition.odm_dlkm.verified.root_digest && adb shell getprop partition.system_dlkm.verified.root_digest && adb shell getprop partition.mi_ext.verified.root_digest",
+                    "adb_cmd": "shell getprop partition.system.verified.root_digest; shell getprop partition.vendor.verified.root_digest; shell getprop partition.product.verified.root_digest; shell getprop partition.odm.verified.root_digest; shell getprop partition.system_ext.verified.root_digest; shell getprop partition.vendor_dlkm.verified.root_digest",
                     "output_file": "partition_integrity.txt",
                     "description": "Verifying partition integrity digests (system tampering detection)...",
                     "yara_scan": false,
@@ -400,10 +400,10 @@
                 },
                 {
                     "id": "init_services",
-                    "adb_cmd": "shell getprop | grep init.svc",
+                    "adb_cmd": "shell getprop",
                     "output_file": "init_services.txt",
                     "description": "Extracting init services (persistence mechanism detection)...",
-                    "yara_scan": true,
+                    "yara_scan": false,
                     "ip_extract": false,
                     "timeline": false
                 },
@@ -472,25 +472,25 @@
                 },
                 {
                     "id": "hooking_framework_detection",
-                    "adb_cmd": "shell ls /data/local/tmp/re.frida.server* && adb shell ls /data/local/tmp/fs-agent* && adb shell ls /data/local/tmp/frida* && adb shell ls /system/framework/XposedBridge.jar && adb shell ls /data/data/de.robv.android.xposed.installer && adb shell ls /system/lib/libxposed* && adb shell which magisk && adb shell ls /data/adb/magisk && adb shell ls /data/adb/.magisk",
+                    "adb_cmd": "shell ls /data/local/tmp/ /system/framework/ /data/data/de.robv.android.xposed.installer/ /system/lib/ /data/adb/ 2>/dev/null; shell which magisk 2>/dev/null",
                     "output_file": "hooking_framework_detection.txt",
                     "description": "Detecting hooking frameworks (Frida, Xposed, Magisk)...",
-                    "yara_scan": true,
+                    "yara_scan": false,
                     "ip_extract": false,
                     "timeline": false
                 },
                 {
                     "id": "memory_integrity",
-                    "adb_cmd": "shell cat /proc/self/maps | grep -E 'frida|xposed|substrate|hook'",
+                    "adb_cmd": "shell cat /proc/self/maps 2>/dev/null",
                     "output_file": "memory_integrity.txt",
                     "description": "Checking memory integrity (hooking framework injection detection)...",
-                    "yara_scan": true,
+                    "yara_scan": false,
                     "ip_extract": false,
                     "timeline": false
                 },
                 {
                     "id": "apk_signature",
-                    "adb_cmd": "shell pm verify com.whatsapp && adb shell pm verify com.instagram.android && adb shell pm verify com.openai.chatgpt && adb shell pm verify org.torproject.torbrowser && adb shell pm verify com.anydesk.anydeskandroid",
+                    "adb_cmd": "shell pm verify com.whatsapp; shell pm verify com.instagram.android; shell pm verify com.openai.chatgpt; shell pm verify org.torproject.torbrowser; shell pm verify com.anydesk.anydeskandroid",
                     "output_file": "apk_signature.txt",
                     "description": "Verifying APK signatures (tampered app detection)...",
                     "yara_scan": false,
@@ -499,7 +499,7 @@
                 },
                 {
                     "id": "vpn_proxy_config",
-                    "adb_cmd": "shell getprop global.http_proxy && adb shell getprop global.socks_proxy",
+                    "adb_cmd": "shell getprop global.http_proxy; shell getprop global.socks_proxy",
                     "output_file": "vpn_proxy_config.txt",
                     "description": "Extracting VPN/proxy configuration (traffic interception detection)...",
                     "yara_scan": false,
@@ -590,9 +590,36 @@
                 },
                 {
                     "id": "sim_country",
-                    "adb_cmd": "shell getprop gsm.sim.operator.iso-country && adb shell getprop gsm.operator.iso-country",
+                    "adb_cmd": "shell getprop gsm.sim.operator.iso-country; shell getprop gsm.operator.iso-country",
                     "output_file": "sim_country.txt",
                     "description": "Extracting SIM country and operator ISO codes...",
+                    "yara_scan": false,
+                    "ip_extract": false,
+                    "timeline": false
+                },
+                {
+                    "id": "install_history",
+                    "adb_cmd": "shell pm list packages -3 -f --show-install-time",
+                    "output_file": "install_history.txt",
+                    "description": "Extracting package install timestamps (timeline analysis)...",
+                    "yara_scan": false,
+                    "ip_extract": false,
+                    "timeline": true
+                },
+                {
+                    "id": "package_permissions",
+                    "adb_cmd": "shell cmd package list permissions -g -f",
+                    "output_file": "package_permissions.txt",
+                    "description": "Extracting permission grant states (dangerous combo detection)...",
+                    "yara_scan": false,
+                    "ip_extract": false,
+                    "timeline": false
+                },
+                {
+                    "id": "play_protect_status",
+                    "adb_cmd": "shell dumpsys package verification; shell settings get global verifier_verify_adb_installs; shell settings get global package_verifier_user_opt_in",
+                    "output_file": "play_protect.txt",
+                    "description": "Checking Play Protect verification status...",
                     "yara_scan": false,
                     "ip_extract": false,
                     "timeline": false

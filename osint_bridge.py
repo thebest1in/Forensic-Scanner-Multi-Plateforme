@@ -55,10 +55,10 @@ class OSINTResult:
     def to_dict(self) -> dict:
         imei_display = self.imei
         if len(self.imei) >= 11:
-            imei_display = f"{self.imei[:8]}{'*' * (len(self.imei) - 11)}{self.imei[-3:]}"
+            imei_display = f"{self.imei[:4]}{'*' * (len(self.imei) - 7)}{self.imei[-3:]}"
         return {
             "available": self.available,
-            "phone_number": self.phone_number,
+            "phone_number": "",
             "imei": imei_display,
             "sim_operator": self.sim_operator,
             "sim_country": self.sim_country,
@@ -177,16 +177,22 @@ def _build_lookup_urls(phone: str, imei: str) -> dict:
     for category, resources in OSINT_RESOURCES.items():
         urls[category] = []
         for res in resources:
-            url = res["url"]
-            if "{phone}" in url and phone:
-                url = url.replace("{phone}", phone)
-            elif "{phone}" in url:
-                url = res["url"]
-            if "{imei}" in url and imei:
-                url = url.replace("{imei}", imei)
-            elif "{imei}" in url:
-                url = res["url"]
-            urls[category].append({"name": res["name"], "url": url})
+            url_template = res["url"]
+            # Never embed real IMEI or phone in report URLs — use templates
+            if "{phone}" in url_template:
+                url = url_template  # keep template, don't substitute
+            elif "{imei}" in url_template:
+                url = url_template  # keep template, don't substitute
+            else:
+                url = url_template
+            entry = {"name": res["name"], "url_template": url}
+            if "{imei}" in url_template and imei:
+                entry["requires_sensitive_value"] = True
+                entry["value_type"] = "imei"
+            if "{phone}" in url_template and phone:
+                entry["requires_sensitive_value"] = True
+                entry["value_type"] = "phone"
+            urls[category].append(entry)
     return urls
 
 
@@ -232,8 +238,12 @@ def lookup_device(
     }
 
     result.available = True
+    if len(result.imei) >= 7:
+        imei_masked = f"{result.imei[:4]}{'*' * (len(result.imei) - 7)}{result.imei[-3:]}"
+    else:
+        imei_masked = "N/A"
     result.details = (
-        f"OSINT data extracted: IMEI={result.imei[:8]}..., "
+        f"OSINT data extracted: IMEI={imei_masked}, "
         f"SIM={result.sim_operator} ({result.sim_country})"
     )
 

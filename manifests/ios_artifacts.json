@@ -1,109 +1,487 @@
 {
-    "version": "4.0",
-    "description": "iOS forensic artifact extraction manifest — iPhone & iPad",
+    "version": "1.0",
+    "description": "iOS forensic artifact manifest — logical backup-based acquisition",
     "os_type": "ios",
+    "acquisition_method": "LOCAL_BACKUP",
     "profiles": {
         "triage": {
-            "name": "iOS Triage",
-            "description": "Fast iOS risk footprint — device info, apps, config profiles (4 artifacts)",
-            "commands": [
+            "name": "Triage Mode",
+            "description": "Device info + installed apps + basic backup analysis",
+            "artifacts": [
                 {
-                    "id": "device_info",
-                    "method": "lockdown",
-                    "output_file": "ios_device_info.txt",
-                    "description": "Querying device properties via Lockdown...",
+                    "id": "device_information",
+                    "parser": "ios.device_info",
+                    "function": "extract_device_summary",
+                    "description": "Device model, OS version, serial number",
+                    "source_type": "live",
                     "yara_scan": false,
-                    "ip_extract": false,
-                    "timeline": false
+                    "requires_backup": false
                 },
                 {
-                    "id": "installed_apps",
-                    "method": "installation_proxy",
-                    "output_file": "ios_installed_apps.txt",
-                    "description": "Listing installed applications...",
-                    "yara_scan": true,
-                    "ip_extract": false,
-                    "timeline": false
+                    "id": "pairing_status",
+                    "parser": "ios.acquisition",
+                    "function": "pair_device",
+                    "description": "Device pairing/trust status",
+                    "source_type": "live",
+                    "yara_scan": false,
+                    "requires_backup": false
                 },
                 {
-                    "id": "config_profiles",
-                    "method": "mobile_config",
-                    "output_file": "ios_config_profiles.txt",
-                    "description": "Extracting configuration profiles (MDM detection)...",
-                    "yara_scan": true,
-                    "ip_extract": false,
-                    "timeline": false
+                    "id": "installed_applications",
+                    "parser": "ios.applications",
+                    "function": "parse_installed_apps",
+                    "description": "All installed apps with bundle IDs",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
                 },
                 {
-                    "id": "syslog",
-                    "method": "syslog",
-                    "output_file": "ios_syslog.txt",
-                    "description": "Capturing system log (2000 recent entries)...",
-                    "yara_scan": true,
-                    "ip_extract": false,
-                    "timeline": true
+                    "id": "backup_manifest",
+                    "parser": "ios.backup",
+                    "function": "read_manifest_database",
+                    "description": "Backup file manifest (Manifest.db)",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "backup_metadata",
+                    "parser": "ios.backup",
+                    "function": "parse_info_plist",
+                    "description": "Info.plist and Status.plist metadata",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "configuration_profiles",
+                    "parser": "ios.parsers.profiles",
+                    "function": "parse_configuration_profiles",
+                    "description": "MDM profiles and VPN configurations",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
                 }
             ]
         },
         "deep": {
-            "name": "iOS Deep Forensic Dump",
-            "description": "Full iOS forensic extraction — all subsystems, apps, profiles, logs (6 artifacts)",
-            "commands": [
+            "name": "Deep Forensic Dump",
+            "description": "Full local backup + iOS-specific parsers + timeline",
+            "artifacts": [
                 {
-                    "id": "device_info",
-                    "method": "lockdown",
-                    "output_file": "ios_device_info.txt",
-                    "description": "Querying device properties via Lockdown...",
+                    "id": "device_information",
+                    "parser": "ios.device_info",
+                    "function": "extract_device_summary",
+                    "description": "Device model, OS version, serial number",
+                    "source_type": "live",
                     "yara_scan": false,
-                    "ip_extract": false,
-                    "timeline": false
+                    "requires_backup": false
                 },
                 {
-                    "id": "installed_apps",
-                    "method": "installation_proxy",
-                    "output_file": "ios_installed_apps.txt",
-                    "description": "Listing installed applications...",
-                    "yara_scan": true,
-                    "ip_extract": false,
-                    "timeline": false
-                },
-                {
-                    "id": "config_profiles",
-                    "method": "mobile_config",
-                    "output_file": "ios_config_profiles.txt",
-                    "description": "Extracting configuration profiles (MDM/surveillance detection)...",
-                    "yara_scan": true,
-                    "ip_extract": false,
-                    "timeline": false
-                },
-                {
-                    "id": "syslog",
-                    "method": "syslog",
-                    "output_file": "ios_syslog.txt",
-                    "description": "Capturing system log (2000 recent entries)...",
-                    "yara_scan": true,
-                    "ip_extract": false,
-                    "timeline": true
-                },
-                {
-                    "id": "battery_stats",
-                    "method": "lockdown",
-                    "output_file": "ios_battery_info.txt",
-                    "description": "Querying battery statistics (background drain detection)...",
+                    "id": "pairing_status",
+                    "parser": "ios.acquisition",
+                    "function": "pair_device",
+                    "description": "Device pairing/trust status",
+                    "source_type": "live",
                     "yara_scan": false,
-                    "ip_extract": false,
-                    "timeline": false
+                    "requires_backup": false
                 },
                 {
-                    "id": "network_info",
-                    "method": "lockdown",
-                    "output_file": "ios_network_info.txt",
-                    "description": "Querying network configuration (WiFi/VPN detection)...",
-                    "yara_scan": true,
-                    "ip_extract": true,
-                    "timeline": false
+                    "id": "installed_applications",
+                    "parser": "ios.applications",
+                    "function": "parse_installed_apps",
+                    "description": "All installed apps with bundle IDs",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "backup_manifest",
+                    "parser": "ios.backup",
+                    "function": "read_manifest_database",
+                    "description": "Backup file manifest (Manifest.db)",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "backup_metadata",
+                    "parser": "ios.backup",
+                    "function": "parse_info_plist",
+                    "description": "Info.plist and Status.plist metadata",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "configuration_profiles",
+                    "parser": "ios.parsers.profiles",
+                    "function": "parse_configuration_profiles",
+                    "description": "MDM profiles and VPN configurations",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "sms_messages",
+                    "parser": "ios.parsers.sms",
+                    "function": "parse_sms",
+                    "description": "SMS/iMessage conversation history",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "call_history",
+                    "parser": "ios.parsers.calls",
+                    "function": "parse_call_history",
+                    "description": "Incoming/outgoing call records",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "contacts",
+                    "parser": "ios.parsers.contacts",
+                    "function": "parse_contacts",
+                    "description": "Contact list with names and numbers",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "safari_history",
+                    "parser": "ios.parsers.safari",
+                    "function": "parse_safari_history",
+                    "description": "Web browsing history",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "safari_downloads",
+                    "parser": "ios.parsers.safari",
+                    "function": "parse_safari_downloads",
+                    "description": "File download history",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "safari_bookmarks",
+                    "parser": "ios.parsers.safari",
+                    "function": "parse_safari_bookmarks",
+                    "description": "Saved bookmarks and reading list",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "wifi_networks",
+                    "parser": "ios.parsers.wifi",
+                    "function": "parse_wifi_networks",
+                    "description": "Known Wi-Fi networks",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "application_domains",
+                    "parser": "ios.parsers.application_domains",
+                    "function": "parse_application_domains",
+                    "description": "Per-app sandbox data and databases",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "analytics_logs",
+                    "parser": "ios.parsers.analytics",
+                    "function": "parse_analytics",
+                    "description": "System analytics and diagnostic data",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "crash_reports",
+                    "parser": "ios.parsers.analytics",
+                    "function": "parse_crash_reports",
+                    "description": "App and system crash reports",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "data_usage",
+                    "parser": "ios.parsers.analytics",
+                    "function": "parse_data_usage",
+                    "description": "Per-app data usage statistics",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "location_artifacts",
+                    "parser": "ios.parsers.application_domains",
+                    "function": "parse_application_domains",
+                    "description": "Location data from app containers",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                }
+            ]
+        },
+        "forensic": {
+            "name": "Forensic Mode",
+            "description": "Encrypted backup + sysdiagnose + IOC correlation + MVT",
+            "artifacts": [
+                {
+                    "id": "device_information",
+                    "parser": "ios.device_info",
+                    "function": "extract_device_summary",
+                    "description": "Device model, OS version, serial number",
+                    "source_type": "live",
+                    "yara_scan": false,
+                    "requires_backup": false
+                },
+                {
+                    "id": "pairing_status",
+                    "parser": "ios.acquisition",
+                    "function": "pair_device",
+                    "description": "Device pairing/trust status",
+                    "source_type": "live",
+                    "yara_scan": false,
+                    "requires_backup": false
+                },
+                {
+                    "id": "installed_applications",
+                    "parser": "ios.applications",
+                    "function": "parse_installed_apps",
+                    "description": "All installed apps with bundle IDs",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "backup_manifest",
+                    "parser": "ios.backup",
+                    "function": "read_manifest_database",
+                    "description": "Backup file manifest (Manifest.db)",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "backup_metadata",
+                    "parser": "ios.backup",
+                    "function": "parse_info_plist",
+                    "description": "Info.plist and Status.plist metadata",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "configuration_profiles",
+                    "parser": "ios.parsers.profiles",
+                    "function": "parse_configuration_profiles",
+                    "description": "MDM profiles and VPN configurations",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "sms_messages",
+                    "parser": "ios.parsers.sms",
+                    "function": "parse_sms",
+                    "description": "SMS/iMessage conversation history",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "call_history",
+                    "parser": "ios.parsers.calls",
+                    "function": "parse_call_history",
+                    "description": "Incoming/outgoing call records",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "contacts",
+                    "parser": "ios.parsers.contacts",
+                    "function": "parse_contacts",
+                    "description": "Contact list with names and numbers",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "safari_history",
+                    "parser": "ios.parsers.safari",
+                    "function": "parse_safari_history",
+                    "description": "Web browsing history",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "safari_downloads",
+                    "parser": "ios.parsers.safari",
+                    "function": "parse_safari_downloads",
+                    "description": "File download history",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "safari_bookmarks",
+                    "parser": "ios.parsers.safari",
+                    "function": "parse_safari_bookmarks",
+                    "description": "Saved bookmarks and reading list",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "wifi_networks",
+                    "parser": "ios.parsers.wifi",
+                    "function": "parse_wifi_networks",
+                    "description": "Known Wi-Fi networks",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "application_domains",
+                    "parser": "ios.parsers.application_domains",
+                    "function": "parse_application_domains",
+                    "description": "Per-app sandbox data and databases",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "analytics_logs",
+                    "parser": "ios.parsers.analytics",
+                    "function": "parse_analytics",
+                    "description": "System analytics and diagnostic data",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "crash_reports",
+                    "parser": "ios.parsers.analytics",
+                    "function": "parse_crash_reports",
+                    "description": "App and system crash reports",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "data_usage",
+                    "parser": "ios.parsers.analytics",
+                    "function": "parse_data_usage",
+                    "description": "Per-app data usage statistics",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "location_artifacts",
+                    "parser": "ios.parsers.application_domains",
+                    "function": "parse_application_domains",
+                    "description": "Location data from app containers",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "encrypted_backup",
+                    "parser": "ios.encrypted_backup",
+                    "function": "is_backup_encrypted",
+                    "description": "Encrypted backup verification and decryption",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true,
+                    "requires_password": true
+                },
+                {
+                    "id": "sysdiagnose",
+                    "parser": "ios.sysdiagnose",
+                    "function": "parse_sysdiagnose",
+                    "description": "System diagnostic logs and panic analysis",
+                    "source_type": "live",
+                    "yara_scan": false,
+                    "requires_backup": false
+                },
+                {
+                    "id": "managed_devices",
+                    "parser": "ios.parsers.profiles",
+                    "function": "parse_managed_devices",
+                    "description": "MDM managed device profiles",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "vpn_configurations",
+                    "parser": "ios.parsers.profiles",
+                    "function": "parse_vpn_configurations",
+                    "description": "VPN tunnel configurations",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "network_usage",
+                    "parser": "ios.parsers.analytics",
+                    "function": "parse_data_usage",
+                    "description": "Network usage per application",
+                    "source_type": "backup",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "ioc_analysis",
+                    "parser": "ios.mvt_ios",
+                    "function": "scan_ios_backup",
+                    "description": "MVT iOS IOC scanning against backup",
+                    "source_type": "mvt",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "mvt_analysis",
+                    "parser": "ios.mvt_ios",
+                    "function": "scan_ios_backup",
+                    "description": "Full MVT iOS forensic analysis",
+                    "source_type": "mvt",
+                    "yara_scan": false,
+                    "requires_backup": true
+                },
+                {
+                    "id": "unified_timeline",
+                    "parser": "ios.timeline",
+                    "function": "build_ios_timeline",
+                    "description": "Unified forensic timeline across all sources",
+                    "source_type": "parser",
+                    "yara_scan": false,
+                    "requires_backup": true
                 }
             ]
         }
+    },
+    "ios_parsers": {
+        "sms": "ios.parsers.sms",
+        "calls": "ios.parsers.calls",
+        "contacts": "ios.parsers.contacts",
+        "safari": "ios.parsers.safari",
+        "wifi": "ios.parsers.wifi",
+        "analytics": "ios.parsers.analytics",
+        "profiles": "ios.parsers.profiles",
+        "application_domains": "ios.parsers.application_domains"
     }
 }

@@ -238,3 +238,18 @@ def build_timeline(
 
     logger.success(f"Timeline: {len(all_events)} events -> {timeline_path.name}")
     return timeline_path
+
+
+def get_timeline_data(timeline_path: Path) -> list[dict]:
+    """Read a forensic timeline CSV and return list of event dicts."""
+    if not timeline_path or not timeline_path.exists():
+        return []
+    events = []
+    try:
+        with open(timeline_path, encoding="utf-8", newline="") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                events.append(row)
+    except Exception as e:
+        logger.warning(f"Failed to read timeline: {e}")
+    return events

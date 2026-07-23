@@ -79,7 +79,9 @@ if result.osint_results:
     print(f"\n  OSINT: IMEI={imei}... SIM={sim_op} ({sim_ctry})")
     for cat, urls in o.get("lookup_urls", {}).items():
         for u in urls[:2]:
-            print(f"    -> {u['name']}: {u['url'][:70]}")
+            url = u.get("url_template", u.get("url", "?"))[:70]
+            sensitive = " [REDACTED]" if u.get("requires_sensitive_value") else ""
+            print(f"    -> {u['name']}: {url}{sensitive}")
 
 if result.openmf_results:
     om = result.openmf_results[0]

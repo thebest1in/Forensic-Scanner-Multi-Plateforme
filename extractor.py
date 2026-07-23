@@ -104,6 +104,8 @@ class Extractor:
         profile_name = load_manifest()["profiles"][self._profile]["name"]
 
         self._report_progress(0, f"Profile: {profile_name} — extracting {total} artifacts...")
+        ok_count = 0
+        fail_count = 0
 
         for i, cmd in enumerate(commands):
             progress = (i / total) * 100
@@ -119,19 +121,22 @@ class Extractor:
             )
 
             file_path = self._dump_dir / cmd["output_file"]
-            if success and output:
+            if success and output and not output.startswith("[EXTRACTION FAILED]"):
                 file_path.write_text(output, encoding="utf-8", errors="replace")
                 self._results[cmd["id"]] = file_path
+                ok_count += 1
                 size_kb = len(output.encode("utf-8", errors="replace")) / 1024
                 core.logger.info(f"Extracted: {cmd['id']} -> {cmd['output_file']} ({size_kb:.1f} KB)")
             else:
+                error_msg = output if output else "ADB command returned no data"
                 file_path.write_text(
-                    f"[EXTRACTION FAILED] ADB command returned no data.\n"
+                    f"[EXTRACTION FAILED] {error_msg}\n"
                     f"Command: adb {cmd['adb_cmd']}\n"
                     f"Ensure USB Debugging (Security Settings) is enabled.",
                     encoding="utf-8",
                 )
                 self._results[cmd["id"]] = file_path
+                fail_count += 1
                 core.logger.warning(f"Extraction empty: {cmd['id']}")
 
             if script_name and script_ready:
@@ -146,7 +151,10 @@ class Extractor:
                     )
 
         self._report_progress(100, "Extraction complete.")
-        core.logger.success(f"Extraction complete. {len(self._results)} artifacts in {self._dump_dir.name}")
+        core.logger.success(
+            f"Extraction complete. {ok_count} successful, {fail_count} failed "
+            f"in {self._dump_dir.name}"
+        )
         return self._results
 
     def _report_progress(self, percent: float, message: str):

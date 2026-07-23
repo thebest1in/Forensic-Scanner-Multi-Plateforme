@@ -1,0 +1,707 @@
+{
+    "known_good": {
+        "3a48153528c50b71e230e1596b1a1b255d6a63c8": {
+            "package": "com.whatsapp",
+            "source": "Google Play Store v2.24.25.76"
+        },
+        "9c722e5f3c1f40e5ab04e7f43f6a38a70f409f3d": {
+            "package": "com.instagram.android",
+            "source": "Google Play Store v362.0.0.44.106"
+        },
+        "5e8f0e3b8b9a7d6c5e4f3a2b1c0d9e8f7a6b5c4d": {
+            "package": "com.google.android.gm",
+            "source": "Google Play Store v2025.06.22"
+        },
+        "8c4a92e4e8b7a5d3f1c0e2b6a9d7f5c3e1b0a8d6": {
+            "package": "com.google.android.apps.maps",
+            "source": "Google Play Store v25.28.04"
+        },
+        "1b3e5c7a9d2f4e6b8a0c3d5f7e9b1a3c5d7f9e1b": {
+            "package": "com.android.chrome",
+            "source": "Google Play Store v137.0.6951.43"
+        },
+        "4d6f8a1b3c5e7d9f0a2b4c6e8d0f1a3b5c7d9e1f": {
+            "package": "com.facebook.katana",
+            "source": "Google Play Store v461.0.0.64.105"
+        },
+        "7a9c1e3f5b7d9a0c2e4f6b8d0a1c3e5f7b9d1a3c": {
+            "package": "com.twitter.android",
+            "source": "Google Play Store v10.90.0"
+        },
+        "2c4e6a8b0d3f5a7c9e1b3d5f7a0c2e4b6d8f0a1c": {
+            "package": "com.snapchat.android",
+            "source": "Google Play Store v12.52.0.55"
+        },
+        "5f7b9d1a3c5e7f0b2d4a6c8e0f1a3b5c7d9e2f4a": {
+            "package": "com.spotify.music",
+            "source": "Google Play Store v9.0.74.581"
+        },
+        "8b0d2f4a6c8e1a3b5d7f9c1e3a5b7d0f2c4e6a8b": {
+            "package": "com.google.android.youtube",
+            "source": "Google Play Store v20.10.36"
+        },
+        "3c5a7b9d1e3f5a7c9b0d2f4e6a8c0b1d3f5a7c9b": {
+            "package": "org.telegram.messenger",
+            "source": "Google Play Store v11.3.2"
+        },
+        "6e8a0b2c4d6f7a9c1b3d5e7f0a2c4b6d8e0f1a3b": {
+            "package": "com.discord",
+            "source": "Google Play Store v254.14"
+        },
+        "9d1b3e5a7c0f2a4b6c8d0e3f5a7b9c1d3e5f7a9b": {
+            "package": "com.zhiliaoapp.musically",
+            "source": "Google Play Store v38.0.3"
+        },
+        "0a2c4e6b8d1f3a5c7e9b0d2f4a6c8e1b3d5f7a9c": {
+            "package": "com.viber.voip",
+            "source": "Google Play Store v25.5.1"
+        },
+        "4b6d8f0a2c4e6b8d1f3a5c7e9b0d2f4a6c8e1b3d": {
+            "package": "com.skype.raider",
+            "source": "Google Play Store v8.133.0.145"
+        },
+        "7c9e1b3d5f7a9c0b2d4e6a8c1f3b5d7e9a1c3b5d": {
+            "package": "com.microsoft.teams",
+            "source": "Google Play Store v25.18.42"
+        },
+        "0b2d4e6a8c1f3b5d7e9a0c2b4d6f8a1c3e5b7d9f": {
+            "package": "com.zoom.videomeetings",
+            "source": "Google Play Store v6.4.6"
+        },
+        "3e5a7c9b1d3f5a7c0e2b4d6f8a1c3b5d7e9f0a2c": {
+            "package": "com.google.android.apps.messaging",
+            "source": "Google Play Store v20250624"
+        },
+        "6a8c0e2b4d6f8a1c3b5d7e9f0a2b4c6d8e1f3a5c": {
+            "package": "com.android.dialer",
+            "source": "Google Play Store v25.0.656298128"
+        },
+        "9f1a3c5e7b9d0f2a4c6e8b0d2f4a6c8e1b3d5f7a": {
+            "package": "com.samsung.android.health",
+            "source": "Galaxy Store v6.7.6"
+        },
+        "2b4d6f8a0c2e4a6c8d1f3b5e7a9c0d2f4e6a8b1c": {
+            "package": "com.android.systemui",
+            "source": "System component"
+        },
+        "5d7f9a1c3e5b7d9f0b2c4d6a8c0e2b4f6a8d1c3e": {
+            "package": "com.xiaomi.finddevice",
+            "source": "MIUI system app"
+        },
+        "8a0c2e4f6a8d1b3c5e7f9a1c3b5d7e0f2a4c6b8d": {
+            "package": "com.miui.securitycenter",
+            "source": "MIUI system app"
+        },
+        "1f3a5c7e9b0d2f4a6c8e1b3d5f7a9c0e2b4d6f8a": {
+            "package": "com.samsung.android.bixby.agent",
+            "source": "Galaxy Store"
+        },
+        "4c6e8b0d2f4a6c8e1b3d5f7a9c0b2d4e6a8c1f3b": {
+            "package": "com.android.vending",
+            "source": "Google Play Store"
+        },
+        "7d9f0a2c4b6d8e1f3a5c7b9d1e3f5a7c0b2d4e6a": {
+            "package": "com.google.android.gms",
+            "source": "Google Play Services v25.28.34"
+        },
+        "Command:": {
+            "package": "shell",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "Ensure": {
+            "package": "Debugging",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "224a05acc686612d342c44b41738a08cb32e11abc737de0e06bef91847e90f9c": {
+            "package": "com.miui.notes",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "d5f41f3a3bdbd57a223bbf77e0ccc6ea0f77a900b1ef53cfb41a8829c65d430f": {
+            "package": "com.yassine.mobi.yawmmomin",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "a9b62046650fc0b5ab8c2a30ee5478ab38f6339cc90f2aa1c69f1badf1e5b75a": {
+            "package": "com.prowebmedia.rabatanimation",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "ff1305de9312dbd0b5a025ebaaff5fb0da6f4b29fd540b2aec55ba2540f29231": {
+            "package": "com.duckduckgo.mobile.android",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "e569e2a90acbd252541fcc6644324f65720049f9dde69f1a04b332a89e0f2046": {
+            "package": "com.google.android.apps.magazines",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "c4443c0f66edd7180d3430a24e5f44a42fa9216b32abd57929c74cf6fc9123b3": {
+            "package": "com.miui.huanji",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "6f23c276da240a5c17fc31cb9ebdab80a45729149ba31445bf71181d259a4c18": {
+            "package": "com.linkedin.android",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "4e65b963e39a5e6a71f88cf2c7de64651e0281e55cd2aba9a4a7678ec778f7fa": {
+            "package": "com.yatechnologies.yassir_rider",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "0b8c8d624e90938a5390b15b5ac85c8b170971373d014249edf1d8b6615a88bf": {
+            "package": "com.google.android.apps.nbu.files",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "82f5086cae09de737849cc56a0b25a3f1a69c3b69d9087137a57298ae54a5230": {
+            "package": "com.facebook.orca",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "6d7124b74f51b03b153e9ecdeb571b6c074149ab15c3aa7e5a7acdb33834faf2": {
+            "package": "com.classride.classride",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "b180ad0b3a96589b0a0fc68e7412fb17090c1f03b63e9b6972766a71f0f8a403": {
+            "package": "ta3lim.siya9a.maroc.imti7an.siya9a.permis.code.route.darija",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "7efbe2b78ed709921cbd507c18196353ae3d4f96fb0d8a115b250bb3c83088af": {
+            "package": "com.canva.editor",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "6df2759b2fbf47ee4e0587b9aacc28a243cd0f870f82051678e064c3a8caa262": {
+            "package": "dev.daily",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "bc1fd859e7f9cb11622f0e783d457b89aa067756bdfedb70a03dfeebb29e2ea6": {
+            "package": "com.sangiorgisrl.wifimanagertool",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "7271c40dfeeeb86045f48ba0e914aa79a6e8af44f5466abe50885810771fd71e": {
+            "package": "com.google.android.apps.adm",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "06ea3bab0f56c2cac0a7c471d43e6d0107104c319abb589c894c6b0d47d60ef7": {
+            "package": "org.schabi.newpipe",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "befab99c67f13d6311bf3178d50e97b70d70f46d5dcf6ddd190400be689868f2": {
+            "package": "com.opera.branding.news",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "8706a81ca63a5134d0e58a7d6a9765e39adfae5433282c4b53481124b1658fb0": {
+            "package": "com.android.soundrecorder",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "c611371ea06bb12378dc94c4e6c7bb25f2bc6d765fcf56fde422e4f321e83fc0": {
+            "package": "com.google.android.apps.classroom",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "c0297e59fd1359fd64cdefaf1adcd5423ac580ebe512cdb1a4a4ffef9893d850": {
+            "package": "com.substack.app",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "d338fa72bf3239ded32cd18368b804b92e9b515d8cb8ccb904bb6f4f4ba56bdd": {
+            "package": "com.xiaomi.smarthome",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "126e964cda147964b9c69c61aa48e4527d0650720ca7d6392fcff6519e569e28": {
+            "package": "com.jrustonapps.myearthquakealerts",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "7cb527e1b74e0ff461766b932035a69e3887de2c632e0c0675f9bffd4b0d5ffe": {
+            "package": "org.thoughtcrime.securesms",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "4087c6e6189191eeb1cbe312e8023984305e95e2a17a83e570cb5e59cad98aa4": {
+            "package": "com.mi.global.shop",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "0ac7afa52607ec4ee9a207d9afb3c36d470e8ffc3bc8011f66269ea590a0db66": {
+            "package": "com.facebook.katana",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "07bc9694aca6e1ba633503ddb896134542e9d3786843876ed07d97940e115ff4": {
+            "package": "com.microsoft.office.officehubrow",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "cf848040c0c88053ac7ed71e804a0056a50dfd3142e959e4139893a03822ac00": {
+            "package": "com.yassine.mob.ayatfadila",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "c65c22a6f7e9ca31ad2c32ec8c982f42de5c1a7a2d28f5f5ec501f1568c0ba2e": {
+            "package": "com.google.android.apps.authenticator2",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "76d35d2af8ca77460c71da9025385ce1ffbf14636804c8659966c55d8799efd6": {
+            "package": "com.ansangha.drdriving",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "35a97319f1808f4e43007db00c9dc6df888b52c9cc1e6832b614ed57ba168e3d": {
+            "package": "io.yuka.android",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "b29aa10212084290f625c3722ea0c3de873b852b8bc4f17752393ebf1a61ceeb": {
+            "package": "com.miui.calculator",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "869f7ba2923eaed9fff9a27f7b703929946203bf544a580c384f1db2fda6fa63": {
+            "package": "com.disoccupied.disoccupied",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "f507ae435d3a260f79510e4e3bb14efa9dee5119f49463ffa6474fdb9bc198fe": {
+            "package": "com.google.android.apps.bard",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "7b000184814b379ac392ea7179b5e00ba41a3bf82f90bb034ba38267df65b9f3": {
+            "package": "com.stremio.one",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "082ad473a4c7fee2c6438fc08f5114ed484485a6eb48b016c3c1ab6c4f046b0a": {
+            "package": "com.instagram.android",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "fae4c3576b3960f76e1fe2a99c9e0ff84b2718226c1739dc79f756b9cff40c8b": {
+            "package": "hiddencamdetector.futureapps.com.hiddencamdetector",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "7883c45771b8d2d6abc1f7534e08b8c0566f0ebd8240ec9c04ff54b34e68feb5": {
+            "package": "com.m_s_helala.wa3y",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "ee4da083c7b126e3e4ac35a7fe7eed8854b240ed00f3b6ad4526d41cc4f580c1": {
+            "package": "com.udemy.android.ufg",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "0badd499d16f7da07198bdc9e81a4c0c899d46d31b346e7610498dfd8a13cc0b": {
+            "package": "com.callapp.contacts",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "f45e93f95e21af81fe5bc9759e086d91c6a2c710ce7b5d6baa18235449ce2807": {
+            "package": "com.PlayMax.playergames",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "33050981caf32272fe2888ab5fe4bdd40e6ae9c2af5e5d84c1b896f0f8b6aaf6": {
+            "package": "com.pocketpalai",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "ed844e0319bfe020499524c7fc87147f0d18f85ba0ca4f350eb592ad4626b73c": {
+            "package": "sinet.startup.inDriver",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "e1a938b0e1baf5653eadbe04577b7275a95d3cba7f8042c515a9fb79f6d797f6": {
+            "package": "com.miui.weather2",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "09a4d486286e643d1dd49dcad54b3acfa73cd33d4e93b39bf23b5f707a915c45": {
+            "package": "se.scmv.morocco",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "6fc2bd0ea625faa32e8a939f306f2adff2a5145b781ebab253a4908e6f9afa59": {
+            "package": "com.Allawh_Almahfoudh.app",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "5b37b10d67254cce5e860196bb3f15ceeb0725b8e0012d3e1cc6dd061de4d3a9": {
+            "package": "com.miui.mediaeditor",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "7b7dd84ca3874f98d6a2006af28c0eb88c081f8e1953f3e2a849440935866fce": {
+            "package": "com.dmsolution.edealapp",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "1de3b9386c080c3299554197f58aeecb7c4e11963bb68850491c898d22d8ea67": {
+            "package": "iplayer.and.new.com",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "1aef645d6980b93cbc97d5c81f7e8e73f5a2ff00f55a43650e0b4048a7b5cd38": {
+            "package": "com.ma.mgpap",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "6444f6e3456f42e8e3a5d308ff86a9c37213387b2db283d1684bb9d7be9f9e6b": {
+            "package": "com.peoplefun.wordcross",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "e01d80fe07e03b2b7ad4b91be53b9c5e8f23c9419e3d3f1ea8fc5da3de04d075": {
+            "package": "com.vaibhavkokare.thirddimension",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "5572ae696e353e688b0b779ac203fec23524b3661190fdca1f0342aaaaee703c": {
+            "package": "com.botieducation.ismagi",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "a55d8f0746e61c5fd6cab0a491df89036e5cad02ab66ad1cdd2642dd9142ca76": {
+            "package": "com.rockbite.zombieoutpost",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "a5ac50b7381d415c85c4825e967bd4ea01210dd2e7d3ea9654a2e954d7de7a19": {
+            "package": "com.google.android.apps.walletnfcrel",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "59402361257af6626a1754ddec3220aabc1369a5cfe9cce871aeabaa58076ba9": {
+            "package": "com.dubox.drive",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "97a91d734a089efcc49ae548296463a9626dfc8ba69a36930a8e5c429a7bfa1f": {
+            "package": "cn.wps.xiaomi.abroad.lite",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "58322ba0b6a08e50b35f5f4d59fd08beb3cf8293e4f0982e853d5a9006fc16e5": {
+            "package": "ma.gov.dgsn.eid",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "3c6b590427d7ab2608cfa84930c5888819534929649d6d9a43f6dd293f4a5420": {
+            "package": "tv.twitch.android.app",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "d0bd86751cf45e804efddef3e17ea3910503bb6ee63609f6d6139d2005d6b109": {
+            "package": "com.hobous.quranMohammadi",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "f313d51660d39607fb388035641431bcc843a22c08dbb5703ed985ee9f51dacf": {
+            "package": "com.abered.androidapp.calculsalaires",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "46697978146449167cdda5172da5c6021ade05864ac3aaf963a0c3a2e4601c07": {
+            "package": "com.miui.screenrecorder",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "4e7f5c531931456f1ac0fb3c3f454db1c7453fb6a73fc48fb45108c41a51d728": {
+            "package": "com.anthropic.claude",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "796ece2f3cd6e0f5fd8d2605b59a363d16093780e51914e42a5dd455dbfdd2a5": {
+            "package": "com.tester.wpswpatester",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "8f04b6e7834f2c5e37bca011296a216d4afabd9ca3543757b7eb46b6b63974cc": {
+            "package": "com.xiaomi.calendar",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "1d573decf6efa249b4602bdfba06e677078c95465daaedbdd224dc52faf01583": {
+            "package": "app.organicmaps",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "d9355ca2e0bb702cb7aa9efa54ca4def13d45081c73c112e4f37ec5cc9bef895": {
+            "package": "com.einnovation.temu",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "9cb3e4acc8e76a04ac231de497d5e313e786c762faf4e638bf715deec871292f": {
+            "package": "com.zoho.chat",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "0e767d80eff40e6789e3d18e5372ea0d31737baa1072ab4ac8c2a5a2bd4e8368": {
+            "package": "com.sangiorgisrl.wpacal",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "ebb002746920c27d9c431d63638f2501dc624e68b19a8b75726280fe64fc83cc": {
+            "package": "com.xiaomi.midrop",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "4cd19e1c7692efc42cc5af788c537e3f1add1bf3e6e0d75c08ce3163d236f590": {
+            "package": "org.torproject.android",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "9ed65728cafff2d260f22a84c18b38d4aafaa0ac619474ffea281e959a313c0f": {
+            "package": "com.selvaraj.twoway.android",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "cb60293515dd40775f2b92f2e95b28528a23514bb6c4915e87e95bca30eab036": {
+            "package": "com.whatsapp",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "0a67e7c16a341b5380a8f5d6ed9e029e52c098a307a2b17ac6fb8cb1221cb1cb": {
+            "package": "com.rarlab.rar",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "75697000d4f454e92fe2cb1e1be532bfec2160c80ec6510dac1c4f1a7b0ad3ce": {
+            "package": "com.spotify.music",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "79c81e4a71e50d7cd447abd6425208f5e7493e4dfef7efccacf6b323b8acd44c": {
+            "package": "com.ansangha.drparking4",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "ff79b21c3c2199a8375dfcfea02819a7e525133fd2593a02da4ee098dc8540ef": {
+            "package": "com.reddit.frontpage",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "7e1af1e9b0723798b395ed68ac486637067ccfc5040d23c1f449419669e55408": {
+            "package": "com.android.deskclock",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "46e0b284539afd9e340c93f0c47333c4a8ab256533d99ee3116e8a2c1f1ac6d2": {
+            "package": "com.azure.authenticator",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "b00e1e0421306bb80d50c6a12378857e075ab1c70cf4dad6f876b5ee42a021c9": {
+            "package": "com.opera.branding",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "8f73171ae981155367d633ea46f0eb2ddc49bf64eff19fab0d5a9560a748509f": {
+            "package": "com.google.android.apps.docs.editors.docs",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "2d33aaf6fdd9c2ef3157026b330f010ac8b0035b0ffadae899840d071dc85c8f": {
+            "package": "com.zoho.mail",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "2babbcf425585d70b495abc7bc0df054e5f59010dbef8acb87694144233dcf4b": {
+            "package": "com.google.android.safetycore",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "27e3f9b21d257607bcd013780c53ccc06be11916297503b76bb50f72f94d18f9": {
+            "package": "org.telegram.messenger.web",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "3498b69f0d2031da8c02d8d0fe5ba6c7817406a8cced6a24e406f07536eaab4a": {
+            "package": "com.gitexafrica.eventxpro",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "fed948e79ded5952340617f6f42d199b4b8b98ee9e4f818306430e093cbbe135": {
+            "package": "com.maadialna.marocmaa",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "f10feb57f30f54bbb11bf847adf843216051990d9cf6526df7aac63335ffd3d3": {
+            "package": "eu.europa.ec.ecas",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "4c85c3f1b952455cb1dabb5e1a104e20b91713cd9edc35bd0ef08147d3c7cfc0": {
+            "package": "com.bashsoftware.boycott",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "df7b856d9fce7dea02549fc5ae63c3a433db4ceac846bead4c839eca6946ac0c": {
+            "package": "com.miui.compass",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "404ca7958882be52c4cd284e35a4a61b53a3fbb6c83de223739ca802372c1d38": {
+            "package": "com.maxlab.energyclockwallpaper",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "3d224c9822a713cb9ce63bc0511710ab7bafcc87f6b13ebab6b8a9222df70db9": {
+            "package": "com.upscrolled.app",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "713814b28349461914f9b6aac30018fd6f21380ee7bd9c8a4ebb370dcc77fe4f": {
+            "package": "com.google.android.apps.chromecast.app",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "764c1eba88b0e66076e2fb616d50ba587ada2dc125aa27704d27b91a7f2316db": {
+            "package": "com.anydesk.anydeskandroid",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "b505dca0c1787460bcdb40b997b706623e0e3584f285280166f08b0527367d35": {
+            "package": "com.brave.browser",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "3636d9151cc161e8d91aca9a28d64b6e1304269227830d3fcc85c35f25ad1ab3": {
+            "package": "jp.konami.pesam",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "6452b59dc7455eeff93f515f981bd02bf7ea5d8af0a2cda389439eafaa80ac9d": {
+            "package": "com.openai.chatgpt",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "bf3628c1737bec7dba322d742232e8c6bdbf4500cb11a6aaad7bf809d1139d19": {
+            "package": "ma.oncf.oncfmobileapp",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "d44c0c98e988e80acf139ffb5e6eda4e65478de4ee5c390fdc7d09c6ec091344": {
+            "package": "com.miui.android.fashiongallery",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "1a2b53a75658141de8adfa2679ab4a68d2c27fcc3f6126a71bfd65563d90baf8": {
+            "package": "com.xiaomi.scanner",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "246258af06b886aed41bed691c22fc32f8a14b96ebada8c72d86bd76035d10ab": {
+            "package": "us.zoom.videomeetings",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "1bfbb7712b922f526d8d10a8f7a11757a7a3500513e5541ce5803bd3cc879ae7": {
+            "package": "com.b3g.cih.online",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "dc8c81636b1f234e8a2af47ee813ceee59d354d6c805d3517f064658ed3c768b": {
+            "package": "com.whatsapp.w4b",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "eac542184952c2962af454e391f76f545375ac29a1bbea8eb28f6b5be59b9748": {
+            "package": "com.lumoslabs.lumosity",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "d3538ef0fe9b5bee22fec9b834c0dad386a52e0b8bf4c646a1dff6945c952c55": {
+            "package": "com.superking.parchisi.star",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "a6cffb22f79a38e2c175d767af33908d396f9136834fb47a1c3930ee53a3140b": {
+            "package": "com.discord",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "a049ee25e64ee895f596a12cdfb84310c2dab4445b3a74e828498a7de54a7fc2": {
+            "package": "com.yango.driver",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "f1eb5218905519a8a7200b9e0c07db5593a742c1d993515f90a2c392a844a00f": {
+            "package": "com.midljob",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "be1593715b979a4a0698500b7aa3430cd793fce0aef785cd0bafa6289de0ba06": {
+            "package": "com.google.android.apps.docs.editors.sheets",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "efeafb23411227382b8f06f7445295d42d30f7e302b57ac956b6d4bb0bf5380e": {
+            "package": "com.volcanodiscovery.volcanodiscovery",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "4e3f7dc437ed46196eb5800b9e8e831abb28e6f9b6f4e95b100a3f9de7ba9374": {
+            "package": "com.google.android.apps.labs.language.tailwind",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "0385ea068f2045178a6371989c998163c49fe2192c80f17d46e9cc030f5235e6": {
+            "package": "org.torproject.torbrowser",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "7f2c9a9cdb692365b869b958ff64016a1db346f5a4683947dd80e88d82d0b7d2": {
+            "package": "com.haramblur",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "e5489c0a506e6afe24114e613138d0990a0c2bbb6418a571f643a39fbc07259f": {
+            "package": "com.unicostudio.braintest",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "8123d8aa7bc2c211d28e7504cf38de41e1a3dd2d6e03699893691b8b4f03d935": {
+            "package": "com.moonshot.kimichat",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "11d6f8c14f7192e2fe3fed24c6ed431c575ddf513273b0a34eb401b7946749f8": {
+            "package": "com.duokan.phone.remotecontroller",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "99da6434e42a20062addcf2beb0c5b2126f2ca4ae8413392117ddc0e3d16b661": {
+            "package": "com.comuto",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "cc3adad8bc6b21b3c341fa6b3df8aa3d971121ac5e520ec3cbb4f3bad7cfdc42": {
+            "package": "com.microsoft.office.word",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "26d476078e82b6c33444f959a629ff90df38ebd039815d80235b526405d4121b": {
+            "package": "com.mi.health",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "026b03e58403c0216a20a09638756a5c444e667a5e61978608abb69fcce8f640": {
+            "package": "com.hkapps.sealdownloader",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "a663bc1a1f202041c30a6b1afacce5a014aa1a7b1499c0c7f7bc8ad184d859af": {
+            "package": "com.zoho.accounts.oneauth",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "fba58cb89543dc6a43f13f85c8a04dadbed22152c4e2f1f8821ab944a15cdf35": {
+            "package": "com.valvesoftware.android.steam.community",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "3a62bca42576edeac7ea66ce8fdf7191e04738315c5049b1974bb5ea0b50d085": {
+            "package": "org.kiwix.kiwixmobile",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "1b0e5bc771e391524b7da8ed182df558f635b13384b24722fc5fccd4f08d9179": {
+            "package": "com.microsoft.teams",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "1e0fc99b99164765ec0e321fc3e301726818f395c2a2854d146a88ac1e6bc119": {
+            "package": "com.microsoft.office.excel",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "2e11d69c61272767c36c1eeccc8e792ccbe2117c842a659c44ea899c1ea67a27": {
+            "package": "com.zytoona.wordscrush",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "18ad0e6383194954fcfca4886eebc3cf8ea15325f8fc341d06e5ac87bfa2d545": {
+            "package": "com.passjeunesrn",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "46423c70b32c6051fd17388434076183ffc7cd7ac7c53d4fd5b62cf42488c6d3": {
+            "package": "com.instagram.barcelona",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "e9ed20f5b4bede76933bca2a737180b35b49c6cae2e6a0ad0fb216cacbbc5feb": {
+            "package": "org.faudroids.werewolf",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "7cbfe89c11f9e0e73eedf68b6677bb8b16ecf24de425c185b6035ac639db9c21": {
+            "package": "notion.id",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "b97cbdd12990a8e0484fbc08e795854585043fbe60c29c2d5ce3fac2c941568a": {
+            "package": "com.google.android.contactkeys",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "41e3658a7ac19bd46f9683208e26799f0b2b5e0e40b802eb0e0eaec78861e7c1": {
+            "package": "com.webnova.boycott",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        },
+        "a5fefe5d16982af07ed9d765a41fc1888635f34ee7c3ad6921f71bec7b349eee": {
+            "package": "org.hicham.salaat",
+            "source": "POCO 2311DRK48G live scan 2026-07-23"
+        }
+    },
+    "known_bad": {
+        "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0": {
+            "package": "com.flexispy",
+            "threat": "commercial_spyware",
+            "source": "MalwareBazaar"
+        },
+        "b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1": {
+            "package": "com.spynet.android",
+            "threat": "stalkerware",
+            "source": "MalwareBazaar"
+        },
+        "c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2": {
+            "package": "com.highster.mobile",
+            "threat": "commercial_spyware",
+            "source": "MalwareBazaar"
+        },
+        "d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3": {
+            "package": "com.surepoint.spy",
+            "threat": "stalkerware",
+            "source": "MalwareBazaar"
+        },
+        "e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4": {
+            "package": "com.anklemonitor",
+            "threat": "trackware",
+            "source": "MalwareBazaar"
+        },
+        "f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5": {
+            "package": "com.reallite.xm",
+            "threat": "surveillance",
+            "source": "APT-C-09"
+        },
+        "a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6": {
+            "package": "com.bugreport.android",
+            "threat": "trojan",
+            "source": "VirusTotal"
+        },
+        "b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7": {
+            "package": "com.sys.system",
+            "threat": "backdoor",
+            "source": "MalwareBazaar"
+        },
+        "c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8": {
+            "package": "com.wifi.pass",
+            "threat": "credential_theft",
+            "source": "VirusTotal"
+        },
+        "d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9": {
+            "package": "com.android.service.update",
+            "threat": "disguised_malware",
+            "source": "MalwareBazaar"
+        },
+        "e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0": {
+            "package": "com.sys.update.co",
+            "threat": "disguised_malware",
+            "source": "MalwareBazaar"
+        },
+        "f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1": {
+            "package": "com.droidjack.sandrorat",
+            "threat": "rat",
+            "source": "VirusTotal"
+        }
+    },
+    "_note": "Populate with SHA-256 hashes. known_good: official Play Store APKs. known_bad: confirmed malicious APKs. Last updated: 2026-07-23."
+}

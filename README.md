@@ -1,23 +1,24 @@
 # Universal Forensic Scanner
 
-**Version** : 7.0.0  
-**Date** : 2026-07-22  
-**Statut** : Release Candidate 3 (GUI + Packaging validés)
+**Version** : 7.1.0  
+**Date** : 2026-07-24  
+**Statut** : Release Candidate 4 (iOS Support Added)
 
 ## Description
 
-Outil d'analyse forensique universel pour smartphones Android, iOS et Linux/Docker.
-Analyse à 12 phases avec détection de spywares, scoring de risque composite et
+Outil d'analyse forensique universel pour smartphones Android et iOS.
+Analyse à 14 phases avec détection de spywares, scoring de risque composite et
 chaîne de preuve intégrée.
 
 ## Fonctionnalités
 
-- **3 modes d'analyse** : Android Live (ADB), Archive offline, Scan live
-- **12 phases d'analyse** : YARA, IOC, MVT, ALEAPP, Capa, APKiD, Quark, OTX, Entropie, Browser, Corrélation
-- **14 règles YARA** : Pegasus, NoviSpy, FinSpy, Dendroid, SandroRAT, HackingTeam
+- **5 modes d'analyse** : Android Live (ADB), Android Offline, iOS Live (libimobiledevice), iOS Offline, Exit
+- **14 phases d'analyse** : YARA, IOC, MVT, ALEAPP, Capa, APKiD, Quark, OTX, Entropie, Browser, Corrélation, Accessibility, APK Hash, Device Admin, Install Timeline
+- **18 règles YARA** : Pegasus, NoviSpy, FinSpy, Dendroid, SandroRAT, HackingTeam
 - **25 000+ IPs malveillantes** : Synchronisation automatique
 - **Score composite 0-100** : YARA + Heuristiques + Outils + Intel + Entropie
-- **Multi-plateforme** : Android, iOS, Linux/Docker
+- **iOS support** : Backup extraction, Manifest.db parsing, 12 iOS-specific parsers
+- **Multi-plateforme** : Android, iOS, Windows/Linux/macOS
 - **GUI + CLI** : Interface graphique CustomTkinter + ligne de commande
 - **Chaîne de preuve** : HMAC-SHA256, SHA-256 chain, packages d'évidence
 - **Remédiation** : Actions DELETE/UPDATE/RESTRICT
@@ -43,7 +44,12 @@ venv\Scripts\python.exe app.py      # GUI
 venv\Scripts\python.exe cli.py      # CLI
 ```
 
-Voir `docs/GUIDE_INSTALLATION.md` pour les détails complets.
+### Prérequis iOS (optionnel)
+
+Pour l'analyse iOS, installer Apple Devices ou iTunes depuis le Microsoft Store :
+https://apps.microsoft.com/detail/9pb2mz1zmb1s
+
+Voir `docs/IOS_ARTIFACTS.md` pour les détails complets.
 
 ## Utilisation rapide
 
@@ -60,8 +66,10 @@ Voir `docs/GUIDE_INSTALLATION.md` pour les détails complets.
 ```bat
 UniversalForensicScanner_CLI.exe
 # 1. Android Live (ADB)
-# 2. Offline archive
-# 3. Exit
+# 2. Android Offline
+# 3. iOS Live (libimobiledevice)
+# 4. iOS Offline
+# 5. Exit
 ```
 
 Voir `docs/GUIDE_UTILISATEUR.md` pour les détails complets.
@@ -74,6 +82,7 @@ Voir `docs/GUIDE_UTILISATEUR.md` pour les détails complets.
 | `docs/GUIDE_ENQUETEUR.md` | Guide pour enquêteurs forensiques |
 | `docs/GUIDE_INSTALLATION.md` | Instructions d'installation |
 | `docs/GUIDE_DEVELOPPEUR.md` | Guide développeur |
+| `docs/IOS_ARTIFACTS.md` | Artifacts iOS et parsers |
 | `docs/LIMITATIONS.md` | Limitations connues |
 | `docs/RELEASE_NOTES.md` | Notes de version |
 | `docs/LICENCES.md` | Licences et attributions |
@@ -84,7 +93,7 @@ Voir `docs/GUIDE_UTILISATEUR.md` pour les détails complets.
 ## Validation
 
 ```text
-pytest:       22/22 pass
+pytest:       34/36 pass
 mock_adb.py:  15/15 pass
 ruff:         All checks passed
 compileall:   Clean

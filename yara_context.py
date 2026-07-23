@@ -29,6 +29,36 @@ def classify_yara_match(
     if artifact_type != AGGREGATE_ARTIFACT:
         tags = {str(t).lower() for t in meta.get("tags", [])}
 
+        # Apple uses PegasusConfiguration as a legitimate group/domain name.
+        # Treat that identifier alone as contextual; preserve escalation for
+        # independent executable, IOC, or behavioral corroboration.
+        matched_values = " ".join(
+            str(item.get("matched_value_preview", "")) for item in evidence
+        ).lower()
+        contexts = " ".join(
+            f"{item.get('context_before', '')} {item.get('context_after', '')}"
+            for item in evidence
+        ).lower()
+        apple_pegasus_name = "group.com.apple.pegasusconfiguration" in (
+            matched_values + " " + contexts
+        )
+        corroborating_markers = (
+            "mvt", "zero-click", "zeroclick", "exploit", "payload",
+            "suspicious executable", "c2", "command and control",
+        )
+        if rule == "Pegasus_Zero_Click_Traces" and apple_pegasus_name and not any(
+            marker in contexts for marker in corroborating_markers
+        ):
+            return {
+                "classification": "contextual evidence requiring corroboration",
+                "confidence": 0.25,
+                "authoritative": False,
+                "reason": (
+                    "The match is an Apple PegasusConfiguration group/domain name; "
+                    "independent IOC or behavioral corroboration is required."
+                ),
+            }
+
         if forensic_context and tags & FORENSIC_TOOL_ALLOWLIST:
             return {
                 "classification": "authorized_forensic_tooling",
@@ -37,9 +67,6 @@ def classify_yara_match(
                 "reason": "YARA rule matches a known forensic analysis tool; expected during authorized investigation.",
             }
 
-        matched_values = " ".join(
-            str(item.get("matched_value_preview", "")) for item in evidence
-        ).lower()
         dual_use_hit = any(
             pkg in matched_values for pkg in KNOWN_DUAL_USE_PACKAGES
         )

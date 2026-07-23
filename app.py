@@ -733,11 +733,19 @@ class ForensicScannerApp(ctk.CTk):
         self._results_text.insert("1.0", summary)
         self._results_text.configure(state="disabled")
 
+        # MITRE ATT&CK mappings
+        mitre = getattr(result, "mitre_mappings", [])
+        if mitre:
+            self._show_mitre_mappings(mitre)
+
         # Show findings panel if threats found
         self._show_findings(result)
 
         # Generate and show recommendations
         self._generate_and_show_recommendations(result)
+
+        # Show Timeline Viewer button if timeline exists
+        self._show_timeline_button()
 
     # ============================================================
     # ROW 6: FINDINGS PANEL (REMOVABLE APPS)
@@ -912,6 +920,107 @@ class ForensicScannerApp(ctk.CTk):
                                   fg_color="#555555")
                 except Exception:
                     pass
+
+    # ============================================================
+    # MITRE ATT&CK MAPPINGS
+    # ============================================================
+
+    def _show_mitre_mappings(self, mappings):
+        """Display MITRE ATT&CK technique mappings in results."""
+        if not mappings:
+            return
+        lines = ["\n--- MITRE ATT&CK Mappings ---"]
+        for m in mappings[:15]:
+            lines.append(
+                f"  {m.get('technique', '?'):10s} | "
+                f"{m.get('tactic', '?'):22s} | "
+                f"{m.get('name', '?')}"
+            )
+            if m.get("package"):
+                lines.append(f"             Package: {m['package']}")
+        if len(mappings) > 15:
+            lines.append(f"  ... +{len(mappings) - 15} more")
+        text = "\n".join(lines)
+        self._results_text.configure(state="normal")
+        self._results_text.insert("end", text)
+        self._results_text.configure(state="disabled")
+
+    # ============================================================
+    # TIMELINE VIEWER BUTTON
+    # ============================================================
+
+    def _show_timeline_button(self):
+        """Show a 'View Timeline' button if a timeline CSV exists."""
+        if not hasattr(self, "_dump_dir") or not self._dump_dir:
+            return
+        timeline_path = self._dump_dir / "forensic_timeline.csv"
+        if not timeline_path.exists():
+            return
+        btn = ctk.CTkButton(
+            self._results_frame,
+            text="Open Timeline Viewer",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            height=28,
+            fg_color="#3498db",
+            hover_color="#2980b9",
+            command=lambda: self._open_timeline_viewer(timeline_path),
+        )
+        btn.grid(row=1, column=0, padx=8, pady=(2, 4), sticky="w")
+
+    def _open_timeline_viewer(self, timeline_path):
+        """Open a new window displaying the forensic timeline."""
+        try:
+            from timeline import get_timeline_data
+            events = get_timeline_data(timeline_path)
+        except Exception as e:
+            messagebox.showerror("Timeline Error", f"Failed to load timeline: {e}")
+            return
+
+        win = ctk.CTkToplevel(self)
+        win.title(f"Forensic Timeline — {len(events)} events")
+        win.geometry("900x600")
+        win.grid_columnconfigure(0, weight=1)
+        win.grid_rowconfigure(1, weight=1)
+
+        # Header
+        hdr = ctk.CTkFrame(win, fg_color="transparent")
+        hdr.grid(row=0, column=0, padx=10, pady=6, sticky="ew")
+        ctk.CTkLabel(
+            hdr,
+            text=f"Forensic Timeline — {len(events)} events",
+            font=ctk.CTkFont(size=14, weight="bold"),
+        ).pack(side="left")
+
+        # Filter controls
+        filter_frame = ctk.CTkFrame(win, fg_color="transparent")
+        filter_frame.grid(row=0, column=0, padx=10, pady=6, sticky="e")
+        ctk.CTkLabel(filter_frame, text="Filter:", font=ctk.CTkFont(size=11)).pack(side="left")
+        filter_var = ctk.StringVar(value="ALL")
+        filter_entry = ctk.CTkEntry(filter_frame, textvariable=filter_var, width=200, placeholder_text="type or source...")
+        filter_entry.pack(side="left", padx=4)
+
+        # Timeline display
+        text = ctk.CTkTextbox(win, font=ctk.CTkFont(family="Consolas", size=10), wrap="word")
+        text.grid(row=1, column=0, padx=8, pady=(0, 8), sticky="nsew")
+
+        def render_events(filter_text=""):
+            text.configure(state="normal")
+            text.delete("1.0", "end")
+            filtered = events
+            if filter_text and filter_text != "ALL":
+                ft = filter_text.lower()
+                filtered = [e for e in events if ft in str(e.get("type", "")).lower() or ft in str(e.get("source", "")).lower() or ft in str(e.get("detail", "")).lower()]
+            for e in filtered:
+                ts = e.get("timestamp", "?")
+                src = e.get("source", "?")
+                etype = e.get("type", "?")
+                detail = e.get("detail", "")[:120]
+                text.insert("end", f"{ts}  [{etype:20s}]  {src:30s}  {detail}\n")
+            text.configure(state="disabled")
+
+        render_events()
+        filter_entry.bind("<Return>", lambda ev: render_events(filter_var.get()))
+        ctk.CTkButton(filter_frame, text="Apply", width=60, command=lambda: render_events(filter_var.get())).pack(side="left", padx=2)
 
     # ============================================================
     # ROW 7: RECOMMENDATIONS PANEL

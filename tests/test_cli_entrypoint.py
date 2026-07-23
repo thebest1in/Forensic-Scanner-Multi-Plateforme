@@ -7,5 +7,5 @@ def test_invalid_cli_choice_returns_nonzero(monkeypatch) -> None:
 
 
 def test_cli_exit_choice_returns_zero(monkeypatch) -> None:
-    monkeypatch.setattr("builtins.input", lambda _prompt: "3")
+    monkeypatch.setattr("builtins.input", lambda _prompt: "5")
     assert main() == 0
